@@ -8,7 +8,7 @@ This repo contains the evaluation code for the NeurIPS'25 benchmark paper "[MMTU
 
 ## Update • October 2025
 
-To improve the quality of **MMTU**, we performed an LLM-based filtering process. After filtering, the number of questions in **MMTU** has been reduced to **28,136**.
+**MMTU 1.0**: We publish the official first release of **MMTU**, with **28,136** questions that has undergone a quality filtering process. 
 
 ## 📚 Table of Contents
 - [Introduction](#-introduction)
