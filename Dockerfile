@@ -51,7 +51,8 @@ RUN pip3 install --no-cache-dir \
     sentencepiece \
     tiktoken \
     datasets \
-    huggingface_hub \
+    "huggingface_hub[cli,hf_transfer]" \
+    hf_transfer \
     pandas \
     numpy \
     openpyxl \
@@ -91,6 +92,7 @@ ENV LLADA_MODEL_PATH=/models/llada-8b-instruct
 ENV QWEN_MODEL_PATH=/models/qwen2-7b-instruct
 ENV HF_HOME=/workspace/.cache/huggingface
 ENV TRANSFORMERS_CACHE=/workspace/.cache/huggingface
+ENV HF_HUB_ENABLE_HF_TRANSFER=1
 
 # Copy and set up entrypoint
 COPY docker/entrypoint.sh /entrypoint.sh
