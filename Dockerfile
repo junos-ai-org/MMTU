@@ -14,8 +14,19 @@ RUN apt-get update && apt-get install -y \
     git \
     wget \
     curl \
+    # Editors and terminal tools
     vim \
+    nano \
+    screen \
+    tmux \
     htop \
+    # Text processing
+    jq \
+    less \
+    tree \
+    gawk \
+    ripgrep \
+    # Cloud tools
     s3fs \
     awscli \
     && rm -rf /var/lib/apt/lists/* \
