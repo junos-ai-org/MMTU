@@ -5,15 +5,14 @@ echo "========================================"
 echo "MMTU Evaluation Container Starting"
 echo "========================================"
 
-# Clone LLaDA if not present
-if [ ! -d "/workspace/LLaDA" ]; then
-    echo "Cloning LLaDA repository..."
-    if [ -n "$LLADA_REPO" ]; then
-        git clone "$LLADA_REPO" /workspace/LLaDA
-    else
-        echo "Warning: LLADA_REPO not set, skipping LLaDA clone"
-        echo "Set LLADA_REPO=https://github.com/junos-ai-org/LLaDA.git"
-    fi
+# LLaDA is included as a submodule - verify it exists
+if [ -d "/workspace/MMTU/llada" ]; then
+    echo "LLaDA submodule found at /workspace/MMTU/llada"
+elif [ -d "/workspace/LLaDA" ]; then
+    echo "LLaDA found at /workspace/LLaDA"
+else
+    echo "Warning: LLaDA not found. If running outside Docker, run:"
+    echo "  git submodule update --init"
 fi
 
 # Mount S3 bucket with model weights (if AWS credentials provided)

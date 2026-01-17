@@ -45,8 +45,20 @@ def load_llada_model(model_path=None):
 
     # Add LLaDA code path for the generate function
     import sys
-    llada_code_path = os.environ.get("LLADA_CODE_PATH", "/workspace/LLaDA")
-    if os.path.exists(llada_code_path) and llada_code_path not in sys.path:
+    llada_code_path = os.environ.get("LLADA_CODE_PATH")
+    if llada_code_path is None:
+        # Check common locations
+        candidates = [
+            os.path.join(os.path.dirname(__file__), "llada"),  # submodule in MMTU
+            "/workspace/LLaDA",  # Docker default
+            "/workspace/MMTU/llada",  # Docker submodule path
+        ]
+        for candidate in candidates:
+            if os.path.exists(candidate):
+                llada_code_path = candidate
+                break
+
+    if llada_code_path and os.path.exists(llada_code_path) and llada_code_path not in sys.path:
         sys.path.insert(0, llada_code_path)
         print(f"Added LLaDA code path: {llada_code_path}")
 

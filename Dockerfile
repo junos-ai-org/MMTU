@@ -44,6 +44,8 @@ RUN pip3 install --no-cache-dir \
     pandas \
     numpy \
     openpyxl \
+    xlsxwriter \
+    tabulate \
     tqdm \
     tenacity \
     openai \
@@ -54,11 +56,12 @@ RUN pip3 install --no-cache-dir \
 # Create workspace
 WORKDIR /workspace
 
-# Clone LLaDA repository (needed for generate.py)
-RUN git clone https://github.com/ML-GSAI/LLaDA.git /workspace/LLaDA
-
-# Copy MMTU code
+# Copy MMTU code (includes llada submodule)
 COPY . /workspace/MMTU
+
+# LLaDA is included as a submodule at /workspace/MMTU/llada
+# Symlink for compatibility with LLADA_CODE_PATH
+RUN ln -s /workspace/MMTU/llada /workspace/LLaDA
 
 # Set up MMTU
 WORKDIR /workspace/MMTU
