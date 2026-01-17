@@ -54,6 +54,9 @@ RUN pip3 install --no-cache-dir \
 # Create workspace
 WORKDIR /workspace
 
+# Clone LLaDA repository (needed for generate.py)
+RUN git clone https://github.com/ML-GSAI/LLaDA.git /workspace/LLaDA
+
 # Copy MMTU code
 COPY . /workspace/MMTU
 
