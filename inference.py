@@ -482,10 +482,37 @@ def main(args):
         # Login using e.g. `huggingface-cli login` to access this dataset
         ds = load_dataset("MMTU-benchmark/MMTU", split="train")
 
+        # Filter dataset
+        if args.tasks or args.max_samples_per_task or args.max_samples:
+            df = ds.to_pandas()
+            df["_task"] = df["metadata"].apply(lambda x: json.loads(x)["task"])
+
+            if args.tasks:
+                available = df["_task"].unique().tolist()
+                unknown = [t for t in args.tasks if t not in available]
+                if unknown:
+                    print(f"Warning: unknown task(s): {unknown}")
+                    print(f"Available tasks: {sorted(available)}")
+                df = df[df["_task"].isin(args.tasks)]
+                print(f"Filtered to tasks: {args.tasks} ({len(df)} samples)")
+
+            if args.max_samples_per_task:
+                df = df.groupby("_task").head(args.max_samples_per_task)
+                print(f"Limited to {args.max_samples_per_task} samples per task ({len(df)} total)")
+
+            if args.max_samples:
+                df = df.head(args.max_samples)
+                print(f"Limited to {args.max_samples} total samples")
+
+            df = df.drop(columns=["_task"])
+
+        else:
+            df = ds.to_pandas()
+
         # Save to JSONL file
         mmtu_file = "mmtu.jsonl"
-        ds.to_json(mmtu_file, lines=True)
-        output_file = f"mmtu.{args.model}.result.jsonl"            
+        df.to_json(mmtu_file, orient="records", lines=True)
+        output_file = f"mmtu.{args.model}.result.jsonl"
 
         query_chat_endpoint(
                 mmtu_file, 
@@ -537,6 +564,12 @@ if __name__ == "__main__":
     parser.add_argument("-l", "--log_level", default="warn", choices=["info", "warn"], type=str)
     parser.add_argument("--shuffle", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--tasks", nargs="*", type=str, default=None,
+                        help="Filter to specific tasks (e.g. --tasks NL2SQL Table-QA)")
+    parser.add_argument("--max_samples", type=int, default=None,
+                        help="Max total number of samples to run")
+    parser.add_argument("--max_samples_per_task", type=int, default=None,
+                        help="Max samples per task")
     args = parser.parse_args()
 
     main(args)
