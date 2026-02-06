@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-REGISTRY="${REGISTRY:-docker.io/achithanar}"
+REGISTRY="${REGISTRY:?Set REGISTRY env var (e.g. export REGISTRY=docker.io/achithanar)}"
 LLADA_DIR="${LLADA_DIR:?Set LLADA_DIR env var (e.g. export LLADA_DIR=~/projects/llada)}"
 MMTU_DIR="$(cd "$(dirname "$0")" && pwd)"
 

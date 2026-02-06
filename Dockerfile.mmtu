@@ -2,12 +2,12 @@
 # Rebuild when MMTU code changes. Fast (~seconds) since llada layer is cached.
 #
 # Build (from the MMTU repo root):
-#   docker build -f Dockerfile.mmtu -t docker.io/achithanar/mmtu-runpod:latest .
+#   docker build -f Dockerfile.mmtu -t <your-registry>/mmtu-runpod:latest .
 #
 # Run on RunPod:
 #   python3 inference.py self_deploy --tasks NL2SQL --max_samples_per_task 10
 
-ARG BASE_IMAGE=docker.io/achithanar/mmtu-llada:latest
+ARG BASE_IMAGE=mmtu-llada:latest
 FROM ${BASE_IMAGE}
 
 WORKDIR /workspace/MMTU
