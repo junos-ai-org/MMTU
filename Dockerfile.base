@@ -2,7 +2,7 @@
 # This layer changes rarely. Rebuild only when upgrading PyTorch or model versions.
 #
 # Build:
-#   docker build -f Dockerfile.base -t <your-registry>/mmtu-base:latest .
+#   docker build -f Dockerfile.base -t docker.io/achithanar/mmtu-base:latest .
 
 # -- Build stage: compile native extensions --
 FROM nvidia/cuda:12.4.1-devel-ubuntu22.04 AS builder

@@ -144,7 +144,7 @@ You need a registry to push your images so RunPod can pull them. Here are your o
 docker login
 
 # 3. Your registry is your Docker Hub username
-export REGISTRY=docker.io/yourusername
+export REGISTRY=docker.io/achithanar
 ```
 
 **Option B: GitHub Container Registry (free for public, works with GitHub repos)**
@@ -184,7 +184,7 @@ We use a three-layer Docker setup so you only rebuild what changed:
 Build all three with the provided script:
 
 ```bash
-export REGISTRY=docker.io/yourusername   # your registry from above
+export REGISTRY=docker.io/achithanar   # your registry from above
 export LLADA_DIR=~/projects/llada        # path to your LLaDA fork
 
 # Build and push everything (first time)
@@ -198,7 +198,7 @@ export LLADA_DIR=~/projects/llada        # path to your LLaDA fork
 
 ### Running on RunPod
 
-1. Create a new **Template** in RunPod pointing to your final image (`<REGISTRY>/mmtu-runpod:latest`)
+1. Create a new **Template** in RunPod pointing to your final image (`docker.io/achithanar/mmtu-runpod:latest`)
 2. Launch a pod with that template (e.g., A100 40GB for LLaDA-8B)
 3. Open a terminal and run:
 
