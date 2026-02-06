@@ -1,0 +1,14 @@
+# LLaDA layer: installs your private LLaDA fork on top of the base image.
+# Rebuild when your fork changes. Fast (~seconds) since base is cached.
+#
+# Build (from the root of your LLaDA fork):
+#   docker build -f /path/to/MMTU/Dockerfile.llada -t <your-registry>/mmtu-llada:latest .
+
+ARG BASE_IMAGE=mmtu-base:latest
+FROM ${BASE_IMAGE}
+
+# Copy and install LLaDA fork
+COPY . /workspace/llada
+RUN pip install --no-cache-dir -e /workspace/llada
+
+WORKDIR /workspace
