@@ -379,12 +379,50 @@ def query_chat_endpoint(input_file, output_file, query_endpoints, temperature, n
     # print the time with two decimal places
     print(f"Time taken: {t1-t0:.2f} seconds")
     
-def self_deploy_query_function():
-    ### implement your self-deploy query function here
-    def query(prompt, temperature):
-        # Implement your self-deploy query logic here
-        pass
-    raise NotImplementedError("Self-deploy query function not implemented")
+def self_deploy_query_function(model_name="GSAI-ML/LLaDA-8B-Instruct", steps=128, gen_length=128, block_length=32):
+    import torch
+    from transformers import AutoTokenizer, AutoModel
+    from generate import generate as llada_generate
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"Loading LLaDA model '{model_name}' on {device}...")
+    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+    model = AutoModel.from_pretrained(model_name, trust_remote_code=True, torch_dtype=torch.bfloat16).to(device).eval()
+    mask_id = tokenizer.mask_token_id if tokenizer.mask_token_id is not None else 126336
+    print(f"LLaDA model loaded.")
+
+    def query(prompt_text, temperature):
+        t0 = time.time()
+        temp = temperature if temperature is not None else 0.0
+
+        messages = [{"role": "user", "content": prompt_text}]
+        chat_input = tokenizer.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
+        input_ids = tokenizer(chat_input, return_tensors="pt")["input_ids"].to(device)
+
+        out = llada_generate(
+            model,
+            input_ids,
+            steps=steps,
+            gen_length=gen_length,
+            block_length=block_length,
+            temperature=temp,
+            cfg_scale=0.,
+            remasking="low_confidence",
+            mask_id=mask_id,
+        )
+
+        response_ids = out[:, input_ids.shape[1]:]
+        response_text = tokenizer.batch_decode(response_ids, skip_special_tokens=True)[0]
+        t1 = time.time()
+
+        return {
+            "response": response_text,
+            "prompt_tokens": input_ids.shape[1],
+            "completion_tokens": response_ids.shape[1],
+            "time_taken": t1 - t0,
+        }
+
+    query.__name__ = f"query_with_llada"
     return query
 
 def main(args):
@@ -401,7 +439,12 @@ def main(args):
             args.endpoint, args.model, args.api_key)
         query_endpoints = [query_func]
     elif args.api_provider == "self_deploy":
-        query_func = self_deploy_query_function()
+        query_func = self_deploy_query_function(
+            model_name=args.model,
+            steps=args.steps,
+            gen_length=args.gen_length,
+            block_length=args.block_length,
+        )
         query_endpoints = [query_func]
     else:
         raise ValueError("Invalid API provider")
@@ -483,7 +526,11 @@ if __name__ == "__main__":
     parser_ai_foundry.add_argument("--api_key", type=str, help="AI Foundry API key", required=True)
     parser_ai_foundry.add_argument("--model", type=str, help="AI Foundry model name", required=True)
 
-    parser_self_deploy = subparsers.add_parser("self_deploy", help="Self Deploy")
+    parser_self_deploy = subparsers.add_parser("self_deploy", help="Self Deploy (LLaDA)")
+    parser_self_deploy.add_argument("--model", type=str, help="HuggingFace model name or local path", default="GSAI-ML/LLaDA-8B-Instruct")
+    parser_self_deploy.add_argument("--steps", type=int, help="Number of diffusion sampling steps", default=128)
+    parser_self_deploy.add_argument("--gen_length", type=int, help="Max number of tokens to generate", default=128)
+    parser_self_deploy.add_argument("--block_length", type=int, help="Semi-autoregressive block size", default=32)
 
     parser.add_argument("-n", "--n_parallel_call_per_key", default=1,
                         type=int, help="number of parallel calls per key")
