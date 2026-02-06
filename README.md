@@ -15,6 +15,7 @@ This repo contains the evaluation code for the NeurIPS'25 benchmark paper "[MMTU
 - [Leaderboard](#-leaderboard)
 - [Evaluate Your Model](#-evaluate-your-model)
   -  [Alternative: Evaluation with Docker](#step-3-alternative-evaluation-with-docker)
+- [Running on RunPod](#-running-on-runpod-or-any-gpu-cloud)
 - [Extension](#-extension-customizing-table-tasks-prompts-and-evaluation)
 
 
@@ -127,6 +128,93 @@ chmod +x run_evaluate_docker.sh
 # Run evaluation on a result file
 ./run_evaluate_docker.sh mmtu.jsonl.<MODEL_NAME>.result.jsonl
 ```
+## 🐳 Running on RunPod (or any GPU cloud)
+
+If you're running on GPU cloud instances (e.g., RunPod), you don't want to spend GPU time installing dependencies. The solution is to pre-bake everything into Docker images.
+
+### Setting up a Docker registry
+
+You need a registry to push your images so RunPod can pull them. Here are your options:
+
+**Option A: Docker Hub (simplest, free for public images)**
+
+```bash
+# 1. Create a free account at https://hub.docker.com
+# 2. Log in from your terminal
+docker login
+
+# 3. Your registry is your Docker Hub username
+export REGISTRY=docker.io/yourusername
+```
+
+**Option B: GitHub Container Registry (free for public, works with GitHub repos)**
+
+```bash
+# 1. Create a personal access token at https://github.com/settings/tokens
+#    with "write:packages" scope
+
+# 2. Log in
+echo $GITHUB_TOKEN | docker login ghcr.io -u yourusername --password-stdin
+
+# 3. Your registry is:
+export REGISTRY=ghcr.io/yourusername
+```
+
+**Option C: Private registries (AWS ECR, GCP Artifact Registry, Azure ACR)**
+
+These are better if you need private images. Follow your cloud provider's docs for authentication, then set `REGISTRY` accordingly.
+
+### Building the images
+
+We use a three-layer Docker setup so you only rebuild what changed:
+
+```
+┌─────────────────────────────────┐
+│  mmtu-base:latest               │  ← CUDA + PyTorch + model weights
+│  (Rarely changes, ~20GB)        │     Rebuild when upgrading PyTorch/model
+├─────────────────────────────────┤
+│  mmtu-llada:latest              │  ← Your LLaDA fork
+│  (Changes when LLaDA changes)   │     Rebuild in ~seconds
+├─────────────────────────────────┤
+│  mmtu-runpod:latest             │  ← MMTU benchmark code
+│  (Changes most often)           │     Rebuild in ~seconds
+└─────────────────────────────────┘
+```
+
+Build all three with the provided script:
+
+```bash
+export REGISTRY=docker.io/yourusername   # your registry from above
+export LLADA_DIR=~/projects/llada        # path to your LLaDA fork
+
+# Build and push everything (first time)
+./build_docker.sh all
+
+# After that, rebuild only what changed:
+./build_docker.sh mmtu     # changed MMTU code only
+./build_docker.sh llada    # changed LLaDA fork (then also rebuild mmtu)
+./build_docker.sh base     # upgraded PyTorch or model (then rebuild all)
+```
+
+### Running on RunPod
+
+1. Create a new **Template** in RunPod pointing to your final image (`<REGISTRY>/mmtu-runpod:latest`)
+2. Launch a pod with that template (e.g., A100 40GB for LLaDA-8B)
+3. Open a terminal and run:
+
+```bash
+# Quick test on 10 samples from one task
+python3 inference.py self_deploy --tasks NL2SQL --max_samples_per_task 10
+
+# Full benchmark
+python3 inference.py self_deploy
+
+# Evaluate
+python3 evaluate.py mmtu.GSAI-ML/LLaDA-8B-Instruct.result.jsonl
+```
+
+The GPU starts working immediately since all deps and model weights are already in the image.
+
 ## 🔧 Extension: Customizing Table Tasks, Prompts, and Evaluation
 
 Our framework is designed to be easily extensible. You can add new table tasks, customize prompt templates, and define your own evaluation metrics with minimal effort.
