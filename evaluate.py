@@ -10,6 +10,12 @@ import time
 import shutil
 import utils.utils as utils
 
+try:
+    import wandb
+    HAS_WANDB = True
+except ImportError:
+    HAS_WANDB = False
+
 from evaluators.nl2sql import NSEvaluator
 from evaluators.tableqa_evaluator import TQAEvaluator
 from evaluators.tfv_evaluator import TFVEvaluator
@@ -215,6 +221,12 @@ if __name__ == "__main__":
     parser.add_argument("--n_jobs", default=-1, type=int)
     parser.add_argument("--debug", action="store_true", default=False)
     parser.add_argument("--viz", action="store_true", default=False)
+    parser.add_argument("--wandb", action="store_true", default=False,
+                        help="Log results to Weights & Biases")
+    parser.add_argument("--wandb_project", type=str, default="mmtu-benchmark",
+                        help="W&B project name (default: mmtu-benchmark)")
+    parser.add_argument("--wandb_run_name", type=str, default=None,
+                        help="W&B run name (default: auto-generated from result file)")
     args = parser.parse_args()
 
 
@@ -223,4 +235,36 @@ if __name__ == "__main__":
 
     assert os.path.exists(args.result_file), f"Result file {args.result_file} does not exist"
 
-    evaluate(args.result_file)
+    summary = evaluate(args.result_file)
+
+    if args.wandb:
+        if not HAS_WANDB:
+            print("Error: wandb is not installed. Run: pip install wandb")
+            exit(1)
+
+        model_name = os.path.basename(args.result_file).split(".")[-3]
+        run_name = args.wandb_run_name or model_name
+
+        run = wandb.init(
+            project=args.wandb_project,
+            name=run_name,
+            config={"model": model_name, "result_file": args.result_file},
+        )
+
+        # Log per-task scores
+        for (task, tag), row in summary.groupby(["task", "tag"]).mean(numeric_only=True).iterrows():
+            for col in row.index:
+                run.log({f"{task}/{col}": row[col]})
+
+        # Log overall MMTU score
+        overall = summary.groupby(["task", "tag"]).mean(numeric_only=True).mean(numeric_only=True)
+        for col in overall.index:
+            run.log({f"mmtu_score/{col}": overall[col]})
+
+        # Upload result file as artifact
+        artifact = wandb.Artifact(f"results-{run_name}", type="results")
+        artifact.add_file(args.result_file)
+        run.log_artifact(artifact)
+
+        run.finish()
+        print(f"Results logged to W&B: {run.url}")
