@@ -55,3 +55,7 @@ build_data.py     # Data preparation — processes raw datasets into benchmark f
 - Imports grouped: stdlib, then third-party, then local (relative imports in packages)
 - Triple-brace template placeholders: `{{{field_name}}}`
 - All new code must include proper type annotations and pass linter checks
+
+## Projects & Experiments
+
+Active projects live in `projects/`, each with its own `CLAUDE.md` (goal, status, decisions) and `experiments.md` (chronological experiment log). Check there for context on ongoing work.
