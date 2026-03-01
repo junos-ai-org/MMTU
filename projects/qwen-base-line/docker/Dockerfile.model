@@ -1,0 +1,4 @@
+FROM mmtu-base:latest
+
+# Download model weights at build time (cached in ~/.cache/huggingface/hub/)
+RUN huggingface-cli download Qwen/Qwen2.5-7B-Instruct

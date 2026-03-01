@@ -218,11 +218,10 @@ def query_request_ai_foundry(client, model, prompt, temperature=1.0, timeout=90)
                 }
         raise e
     
-def create_query_funtion_openai(endpoint, model, api_key, api_version):
+def create_query_funtion_openai(endpoint, model, api_key, api_version=None):
     def query(prompt, temperature):
         client = OpenAI(
-            api_base=endpoint,
-            api_version=api_version,
+            base_url=endpoint,
             api_key=api_key
         )
         return query_request(client, model, prompt, temperature)
@@ -469,7 +468,7 @@ if __name__ == "__main__":
     parser_openai = subparsers.add_parser("openai", help="OpenAI API provider")
     parser_openai.add_argument("--endpoint", type=str, help="OpenAI API endpoint", required=True)
     parser_openai.add_argument("--api_key", type=str, help="OpenAI API key", required=True)
-    parser_openai.add_argument("--api_version", type=str, help="OpenAI API version", required=True)
+    parser_openai.add_argument("--api_version", type=str, help="OpenAI API version", default=None)
     parser_openai.add_argument("--model", type=str, help="OpenAI model name", required=True)
 
     parser_azure_openai = subparsers.add_parser("azure_openai", help="Azure OpenAI API provider")
