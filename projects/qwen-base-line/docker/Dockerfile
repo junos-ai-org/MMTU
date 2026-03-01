@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # MMTU Python dependencies
 RUN pip install --no-cache-dir \
-    pandas tabulate tiktoken tqdm xlsxwriter tenacity datasets openai azure-ai-inference
+    pandas tabulate tiktoken tqdm xlsxwriter tenacity datasets openai azure-ai-inference \
+    && ln -sf "$(which python3)" /usr/local/bin/python
 
 # MMTU code — install outside /workspace (RunPod mounts a volume there)
 COPY . /opt/MMTU

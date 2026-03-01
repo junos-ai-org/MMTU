@@ -4,7 +4,8 @@ set -e
 # Copy MMTU code to /workspace if not already there (RunPod volume overlay)
 if [ ! -f /workspace/MMTU/inference.py ]; then
     echo "Copying MMTU code to /workspace/MMTU..."
-    cp -r /opt/MMTU /workspace/MMTU
+    mkdir -p /workspace/MMTU
+    cp -r /opt/MMTU/. /workspace/MMTU/
     echo "  Done."
 fi
 
