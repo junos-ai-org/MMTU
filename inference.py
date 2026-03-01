@@ -95,6 +95,22 @@ def query_request(client, model, prompt, temperature=1.0, timeout=90):
         logger.error(f"Internal server error.")
         raise e
         # exit(1)
+    except openai.BadRequestError as e:
+        t1 = time.time()
+        error_msg = str(e)
+        logger.error(f"Bad request error: {error_msg}")
+        if "context_length" in error_msg or "input_tokens" in error_msg or "too many tokens" in error_msg.lower():
+            response = "Error: string above max length"
+        elif "content_filter" in error_msg:
+            response = "Error: content filter"
+        else:
+            response = f"Error: bad request - {error_msg}"
+        return {
+            "response": response,
+            "prompt_tokens": prompt_token,
+            "completion_tokens": completion_token,
+            "time_taken": t1 - t0
+        }
     except Exception as e:
         # print(f"End time: {time.time()}")
         # logger.error(f"Error processing query: {e}")
