@@ -116,6 +116,25 @@ def query_request(client, model, prompt, temperature=1.0, timeout=90):
         # print(f"End time: {time.time()}")
         # logger.error(f"Error processing query: {e}")
         print(e.__dict__)
+        # Check for HTTP 400 errors that bypassed openai.BadRequestError
+        # (e.g. from vLLM OpenAI-compatible servers)
+        status = getattr(e, 'status_code', getattr(e, 'code', None))
+        if status == 400:
+            error_msg = str(e)
+            t1 = time.time()
+            if "context_length" in error_msg or "input_tokens" in error_msg or "too many tokens" in error_msg.lower():
+                response = "Error: string above max length"
+            elif "content_filter" in error_msg:
+                response = "Error: content filter"
+            else:
+                response = f"Error: bad request - {error_msg}"
+            logger.error(f"Bad request error (generic handler): {error_msg}")
+            return {
+                "response": response,
+                "prompt_tokens": prompt_token,
+                "completion_tokens": completion_token,
+                "time_taken": t1 - t0
+            }
         if hasattr(e, 'code'):
             logger.error(
                     f"Error processing query: {e.code}") # type: ignore
