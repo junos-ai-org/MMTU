@@ -24,19 +24,51 @@ served via vLLM on RunPod.
 
 ## Workflow
 
-```
-1. BUILD (any x86_64 Linux, e.g. AWS EC2 t3.medium)
-   git clone ... && cd MMTU
+### Step 1: Build on AWS EC2
+
+1. **Launch EC2** in AWS Console:
+   - AMI: Amazon Linux 2023 (or Ubuntu 22.04)
+   - Instance type: `t3.medium` (~$0.04/hr, or ~$0.01/hr spot)
+   - Storage: 30 GB gp3
+   - Security group: allow SSH (port 22)
+   - Key pair: create or select one
+
+2. **SSH in**:
+   ```bash
+   ssh -i key.pem ec2-user@<public-ip>    # Amazon Linux
+   ssh -i key.pem ubuntu@<public-ip>      # Ubuntu
+   ```
+
+3. **Run the build script** (edit the config vars first):
+   ```bash
+   curl -O https://raw.githubusercontent.com/junos-ai-org/MMTU/main/projects/qwen-base-line/docker/ec2-build-guide.sh
+   # Edit DOCKERHUB_USER and GITHUB_REPO_URL in the script
+   bash ec2-build-guide.sh
+   ```
+   Or manually:
+   ```bash
+   sudo yum install -y docker git && sudo systemctl start docker
+   sudo usermod -aG docker $USER && newgrp docker
+   git clone https://github.com/junos-ai-org/MMTU.git && cd MMTU
+   docker login
    bash projects/qwen-base-line/docker/build.sh \
-     --registry docker.io/<username> --push
+       --registry docker.io/<username> --push
+   ```
 
-2. RUNPOD
-   Create GPU pod (A40/A100, >=24GB VRAM)
-   Template image: docker.io/<username>/mmtu-qwen-baseline:latest
-   Optional: network volume on /workspace (caches model weights)
+4. **Terminate the EC2 instance** — don't leave it running.
 
-3. RUN (SSH into pod, entrypoint auto-downloads model + starts vLLM)
-   cd /workspace/MMTU
-   python projects/qwen-base-line/run.py smoke
-   python projects/qwen-base-line/run.py baseline
+### Step 2: Deploy on RunPod
+
+1. Create a GPU pod (A40/A100, >=24GB VRAM)
+2. Template image: `docker.io/<username>/mmtu-qwen-baseline:latest`
+3. Optional: attach a network volume on `/workspace` (caches model weights)
+
+### Step 3: Run experiments
+
+SSH into the RunPod pod. The entrypoint auto-downloads the model + starts vLLM.
+
+```bash
+cd /workspace/MMTU
+python projects/qwen-base-line/run.py smoke      # quick sanity check
+python projects/qwen-base-line/run.py baseline   # full baseline
 ```
