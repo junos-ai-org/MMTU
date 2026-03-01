@@ -10,6 +10,7 @@ from datetime import date
 from openai import AzureOpenAI, OpenAI
 from tenacity import (
     retry,
+    retry_if_not_exception_type,
     stop_after_attempt,
     wait_random_exponential,
     wait_random,
@@ -44,7 +45,7 @@ query_queue = queue.Queue()
 # Lock for synchronizing file write operations
 file_lock = threading.Lock()
 
-@retry(wait=wait_random_exponential(max=30, multiplier=2), stop=stop_after_attempt(6))
+@retry(wait=wait_random_exponential(max=30, multiplier=2), stop=stop_after_attempt(6), retry=retry_if_not_exception_type(openai.BadRequestError))
 def query_request(client, model, prompt, temperature=1.0, timeout=90):
     response = ""
     prompt_token = None
