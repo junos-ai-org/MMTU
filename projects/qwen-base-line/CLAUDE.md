@@ -19,5 +19,24 @@ served via vLLM on RunPod.
 - **Temperature 0**: Deterministic baseline.
 - **TNIAH excluded**: `Table-needle-in-a-haystack` evaluator reads local
   filesystem paths for ground truth; fails on RunPod.
-- **3-layer Docker**: base (deps) -> model (weights) -> code.
-  Code changes rebuild only the top layer (seconds).
+- **Runtime model download**: Weights not baked into image (~11GB vs ~25GB).
+  Cached on RunPod network volume (`/workspace/.cache/huggingface`).
+
+## Workflow
+
+```
+1. BUILD (any x86_64 Linux, e.g. AWS EC2 t3.medium)
+   git clone ... && cd MMTU
+   bash projects/qwen-base-line/docker/build.sh \
+     --registry docker.io/<username> --push
+
+2. RUNPOD
+   Create GPU pod (A40/A100, >=24GB VRAM)
+   Template image: docker.io/<username>/mmtu-qwen-baseline:latest
+   Optional: network volume on /workspace (caches model weights)
+
+3. RUN (SSH into pod, entrypoint auto-downloads model + starts vLLM)
+   cd /workspace/MMTU
+   python projects/qwen-base-line/run.py smoke
+   python projects/qwen-base-line/run.py baseline
+```

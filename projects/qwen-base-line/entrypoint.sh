@@ -7,6 +7,14 @@ PORT=8000
 HEALTH_URL="http://localhost:${PORT}/v1/models"
 TIMEOUT=300
 
+# Use persistent cache on /workspace (survives pod restarts with network volume)
+export HF_HOME="/workspace/.cache/huggingface"
+
+# Download model weights if not already cached
+echo "Checking model weights for ${MODEL}..."
+huggingface-cli download "$MODEL"
+echo "  Model weights ready."
+
 echo "Starting vLLM server for ${MODEL}..."
 nohup vllm serve "$MODEL" \
     --host 0.0.0.0 \
