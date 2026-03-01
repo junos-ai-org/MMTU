@@ -16,4 +16,5 @@ COPY . /workspace/MMTU
 COPY projects/qwen-base-line/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+ENTRYPOINT []
 CMD ["/entrypoint.sh"]
