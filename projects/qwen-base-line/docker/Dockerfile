@@ -9,9 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install --no-cache-dir \
     pandas tabulate tiktoken tqdm xlsxwriter tenacity datasets openai azure-ai-inference
 
-# MMTU code
-WORKDIR /workspace/MMTU
-COPY . /workspace/MMTU
+# MMTU code — install outside /workspace (RunPod mounts a volume there)
+COPY . /opt/MMTU
 
 COPY projects/qwen-base-line/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
