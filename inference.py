@@ -119,7 +119,9 @@ def query_request(client, model, prompt, temperature=1.0, timeout=90):
         # Check for HTTP 400 errors that bypassed openai.BadRequestError
         # (e.g. from vLLM OpenAI-compatible servers)
         status = getattr(e, 'status_code', getattr(e, 'code', None))
+        logger.error(f"[DIAG] Generic handler hit: type={type(e).__name__}, status={status}, mro={[c.__name__ for c in type(e).__mro__]}")
         if status == 400:
+            logger.error(f"[DIAG] Caught 400 in generic handler — returning early (no retry)")
             error_msg = str(e)
             t1 = time.time()
             if "context_length" in error_msg or "input_tokens" in error_msg or "too many tokens" in error_msg.lower():
