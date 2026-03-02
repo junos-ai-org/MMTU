@@ -28,7 +28,7 @@ nohup vllm serve "$MODEL" \
     --host 0.0.0.0 \
     --port "$PORT" \
     --gpu-memory-utilization 0.9 \
-    --max-model-len 32768 \
+    --max-model-len 65536 \
     > "$LOG_FILE" 2>&1 &
 
 VLLM_PID=$!
