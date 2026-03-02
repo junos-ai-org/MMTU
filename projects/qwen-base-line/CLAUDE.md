@@ -7,7 +7,7 @@ served via vLLM on RunPod.
 ## Status
 - [x] Phase 1: Smoke test (5 Entity-Matching questions)
 - [x] Phase 2: Baseline (99 questions, 11 tasks x 9) — score 0.398, 13/99 hit context limit
-- [ ] Phase 2b: Re-run baseline with --max-model-len 65536 to fix 13 context-limit failures
+- [x] Phase 2b: Re-run with --max-model-len 65536 — 0 context failures, score unchanged (0.398)
 
 ## Key Decisions
 - **Uses inference.py**: Fixed `create_query_funtion_openai()` to use modern

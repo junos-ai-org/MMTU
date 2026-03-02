@@ -39,7 +39,35 @@
 
 - **13/99 queries failed** with HTTP 400: prompts were 32,769 tokens, exceeding
   the vLLM `--max-model-len 32768` by exactly 1 token.
-- Arithmetic-Relationship returned NaN — likely all 9 samples exceeded the
-  context limit.
+- Arithmetic-Relationship returned NaN — initially suspected context limit,
+  but see Experiment 2 below.
 - **Fix**: Bumped `--max-model-len` to 65536 in entrypoint.sh for the next run.
   Qwen2.5-7B natively supports 131K context.
+
+## Experiment 2: Baseline re-run with --max-model-len 65536
+
+**Date**: 2026-03-02
+**Model**: Qwen2.5-7B-Instruct via vLLM
+**Settings**: temperature=0, max_model_len=65536, seed=42
+**Image**: `achithanar/mmtu-qwen-baseline:logging` (rebuilt with 65K context)
+**Result file**: `baseline.Qwen2_5-7B-Instruct.result.fix.jsonl`
+
+### Results
+
+**Overall MMTU score: 0.398 (unchanged)**
+
+All 99/99 queries got responses (0 context-limit failures). But the 13
+previously-failed queries all evaluated to 0, so the score didn't change.
+
+### Analysis
+
+- **Context fix confirmed working**: 0 HTTP 400 errors (was 13).
+- **Arithmetic-Relationship still NaN**: This is a **format mismatch**, not a
+  context issue. 8/9 AR samples already had responses in Experiment 1.
+  The evaluator's `preprocess()` filters predictions against `labeled_formulas`;
+  the model outputs formulas in formats that don't match (e.g., nested lists
+  `[["B = A * 0.4", ...]]` instead of flat `["B=A*0.4"]`, or formulas with
+  whitespace differences).
+- **Zero-score tasks** (Data-Imputation, String-Relationship,
+  Table-Locate-by-Row-Col): model responses exist but don't match expected
+  answers — a model capability issue at 7B scale, not infrastructure.
