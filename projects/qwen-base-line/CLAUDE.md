@@ -5,8 +5,9 @@ Establish a baseline for Qwen2.5-7B-Instruct on a subset of MMTU tasks,
 served via vLLM on RunPod.
 
 ## Status
-- [ ] Phase 1: Smoke test (5 Entity-Matching questions)
-- [ ] Phase 2: Baseline (99 questions, 11 tasks x 9)
+- [x] Phase 1: Smoke test (5 Entity-Matching questions)
+- [x] Phase 2: Baseline (99 questions, 11 tasks x 9) — score 0.398, 13/99 hit context limit
+- [ ] Phase 2b: Re-run baseline with --max-model-len 65536 to fix 13 context-limit failures
 
 ## Key Decisions
 - **Uses inference.py**: Fixed `create_query_funtion_openai()` to use modern
