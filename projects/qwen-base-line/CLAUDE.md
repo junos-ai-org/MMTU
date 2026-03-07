@@ -8,6 +8,11 @@ served via vLLM on RunPod.
 - [x] Phase 1: Smoke test (5 Entity-Matching questions)
 - [x] Phase 2: Baseline (99 questions, 11 tasks x 9) — score 0.398, 13/99 hit context limit
 - [x] Phase 2b: Re-run with --max-model-len 65536 — 0 context failures, score unchanged (0.398)
+- [x] Parameterize token limit (MAX_INPUT_TOKENS=120K) and vLLM max-model-len (131K native)
+
+## Process
+- After every commit, check if `CLAUDE.md` or `experiments.md` need updating
+  (new decisions, status changes, config changes, etc.).
 
 ## Key Decisions
 - **Uses inference.py**: Fixed `create_query_funtion_openai()` to use modern
@@ -22,6 +27,10 @@ served via vLLM on RunPod.
   filesystem paths for ground truth; fails on RunPod.
 - **Runtime model download**: Weights not baked into image (~11GB vs ~25GB).
   Cached on RunPod network volume (`/workspace/.cache/huggingface`).
+- **Token filtering**: Prompts exceeding `MAX_INPUT_TOKENS` (120K) are dropped
+  before inference, reserving 8K tokens for output within the 131K context window.
+- **vLLM context**: `--max-model-len` is parameterized via `$VLLM_MAX_MODEL_LEN`
+  env var (default 131072, the model's native max). Was hardcoded to 65536.
 
 ## Workflow
 
