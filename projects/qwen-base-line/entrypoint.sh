@@ -12,6 +12,7 @@ fi
 LOG_FILE="/workspace/vllm.log"
 MODEL="Qwen/Qwen2.5-7B-Instruct"
 PORT=8000
+MAX_MODEL_LEN="${VLLM_MAX_MODEL_LEN:-131072}"
 HEALTH_URL="http://localhost:${PORT}/v1/models"
 TIMEOUT=300
 
@@ -28,7 +29,7 @@ nohup vllm serve "$MODEL" \
     --host 0.0.0.0 \
     --port "$PORT" \
     --gpu-memory-utilization 0.9 \
-    --max-model-len 65536 \
+    --max-model-len "$MAX_MODEL_LEN" \
     > "$LOG_FILE" 2>&1 &
 
 VLLM_PID=$!

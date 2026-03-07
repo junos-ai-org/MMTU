@@ -134,6 +134,7 @@ def _run_phase(phase_name: str, tasks: list[str], n_per_task: int,
     from config import (
         VLLM_BASE_URL, VLLM_API_KEY, VLLM_MODEL, MODEL_ALIAS,
         TEMPERATURE, HF_DATASET, HF_SPLIT, RANDOM_SEED,
+        MAX_INPUT_TOKENS,
     )
 
     mmtu_root = _get_mmtu_root()
@@ -154,6 +155,24 @@ def _run_phase(phase_name: str, tasks: list[str], n_per_task: int,
     print("\n[2/4] Loading and sampling dataset...")
     records = load_mmtu_dataset(HF_DATASET, HF_SPLIT)
     sampled = sample_records(records, tasks, n_per_task, RANDOM_SEED)
+
+    # 2b. Filter out prompts exceeding token limit
+    mmtu_root_str = str(mmtu_root)
+    if mmtu_root_str not in sys.path:
+        sys.path.insert(0, mmtu_root_str)
+    from utils.count_token import count_tokens_mp
+
+    print(f"\n  Filtering prompts > {MAX_INPUT_TOKENS:,} tokens...")
+    prompts = [rec["prompt"] for rec in sampled]
+    token_counts = count_tokens_mp(prompts)
+    before = len(sampled)
+    sampled = [rec for rec, tc in zip(sampled, token_counts)
+               if tc <= MAX_INPUT_TOKENS]
+    skipped = before - len(sampled)
+    if skipped:
+        print(f"  Skipped {skipped}/{before} prompts exceeding"
+              f" {MAX_INPUT_TOKENS:,} tokens")
+    print(f"  Kept {len(sampled)} prompts")
 
     # 3. Write input JSONL and run inference
     print("\n[3/4] Running inference...")
