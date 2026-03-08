@@ -86,6 +86,20 @@ build_data.py     # Data preparation — processes raw datasets into benchmark f
 - Triple-brace template placeholders: `{{{field_name}}}`
 - All new code must include proper type annotations and pass linter checks
 
+## Testing
+
+Each project should include a `tests/` directory with unit tests. Tests should use mocks
+to avoid requiring GPUs, model checkpoints, or network access. Run with `pytest tests/ -v`.
+
+**Always add unit tests for:**
+- Tensor shape invariants and batch dimension handling
+- Pure functions (math utilities, data transforms, token counting)
+
+**Add integration tests where they would catch non-obvious bugs:**
+- Batched vs single inference consistency
+- Padding/truncation edge cases
+- End-to-end prompt-to-evaluation round-trips with small fixture data
+
 ## Projects & Experiments
 
 Active projects live in `projects/`, each with its own `CLAUDE.md` (goal, status, decisions) and `experiments.md` (chronological experiment log). Check there for context on ongoing work.
