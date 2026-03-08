@@ -1,4 +1,4 @@
-# baselines
+# qwen-llada-alpha
 
 ## Goal
 Shared experiment runner for evaluating multiple models on MMTU benchmark tasks.
@@ -17,7 +17,7 @@ and traceable results.
 ## Architecture
 
 ```
-projects/baselines/
+projects/qwen-llada-alpha/
 ├── run.py                          # Shared entry point (run, evaluate, list)
 ├── backends/
 │   ├── base.py                     # InferenceBackend ABC
@@ -56,19 +56,19 @@ projects/baselines/
 1. Create `backends/new_backend.py` implementing `InferenceBackend` (load, generate, health_check)
 2. Register it in `backends/__init__.py`
 3. Create a YAML config in `configs/`
-4. Run: `python projects/baselines/run.py run configs/your-config.yaml`
+4. Run: `python projects/qwen-llada-alpha/run.py run configs/your-config.yaml`
 
 ## Commands
 
 ```bash
 # Run an experiment
-python projects/baselines/run.py run configs/llada-8b-smoke.yaml
+python projects/qwen-llada-alpha/run.py run configs/llada-8b-smoke.yaml
 
 # Evaluate a result file standalone
-python projects/baselines/run.py evaluate output/llada-8b-smoke/llada-8b-smoke.LLaDA-8B-Instruct.result.jsonl
+python projects/qwen-llada-alpha/run.py evaluate output/llada-8b-smoke/llada-8b-smoke.LLaDA-8B-Instruct.result.jsonl
 
 # List all experiments
-python projects/baselines/run.py list
+python projects/qwen-llada-alpha/run.py list
 ```
 
 ## Configuration Reference

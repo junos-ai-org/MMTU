@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir \
 # MMTU code — install outside /workspace (RunPod mounts a volume there)
 COPY . /opt/MMTU
 
-COPY projects/baselines/docker/entrypoint.sh /entrypoint.sh
+COPY projects/qwen-llada-alpha/docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT []
