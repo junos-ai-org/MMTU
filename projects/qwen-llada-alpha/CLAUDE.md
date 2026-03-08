@@ -52,6 +52,20 @@ projects/qwen-llada-alpha/
 - **Subprocess evaluation**: Same approach as qwen-base-line — calls evaluate.py via
   subprocess to avoid its module-level `args` globals.
 
+## Testing
+
+Unit tests live in `tests/` and use a `FakeModel` mock (no GPU or checkpoint needed).
+Run with: `pytest tests/ -v`
+
+Existing coverage: `tests/test_llada_generate.py` — tensor shapes, batch dims, remasking
+strategies, CFG, semi-autoregressive blocks, `get_num_transfer_tokens`.
+
+When adding new backends or modifying core logic, add unit tests for tensor plumbing
+and shape invariants. Integration tests (requiring a real model or dataset) are not
+needed for every change, but should be added where they would catch non-obvious bugs
+(e.g. batched vs single inference consistency, padding/truncation edge cases,
+end-to-end prompt→evaluation round-trips with a small fixture dataset).
+
 ## Adding a New Model Backend
 1. Create `backends/new_backend.py` implementing `InferenceBackend` (load, generate, health_check)
 2. Register it in `backends/__init__.py`
