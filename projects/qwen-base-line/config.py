@@ -40,7 +40,6 @@ BASELINE_N_PER_TASK = 9
 RANDOM_SEED = 42
 
 # Token limits
-# Qwen2.5-7B natively supports 131K context (input + output combined).
-# Reserve 8K for output → 120K max input.
-MAX_INPUT_TOKENS = 120_000
-VLLM_MAX_MODEL_LEN = 131072
+# LLada comparison: 4096 context, reserve 512 for output → 3584 max input.
+MAX_INPUT_TOKENS = 3_584
+VLLM_MAX_MODEL_LEN = 4096
