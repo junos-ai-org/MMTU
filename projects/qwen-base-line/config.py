@@ -38,3 +38,8 @@ BASELINE_N_PER_TASK = 9
 
 # Random seed for reproducible sampling
 RANDOM_SEED = 42
+
+# Token limits
+# LLada comparison: 4096 context, reserve 512 for output → 3584 max input.
+MAX_INPUT_TOKENS = 3_584
+VLLM_MAX_MODEL_LEN = 4096
