@@ -64,9 +64,16 @@ def load_evaluators():
     }
 
 
+# Tasks whose primary metric is F1 (per-row: precision + recall)
+F1_TASKS = {
+    "Schema-Matching", "Arithmetic-Relationship", "Functional-Dependency",
+    "String-Relationship", "equi-join-detect", "semantic-join",
+    "Error-Detect",
+}
+
+
 def find_eom(response: str) -> str:
     """Return response up to end-of-message marker (or full response)."""
-    # LLaDA uses <|im_end|> or <|endoftext|> — strip anything after
     for marker in ("<|im_end|>", "<|endoftext|>", "<|eom|>"):
         idx = response.find(marker)
         if idx != -1:
@@ -74,15 +81,67 @@ def find_eom(response: str) -> str:
     return response
 
 
-def evaluate_row(evaluator, metadata: dict, response: str) -> int:
-    """Return 1 if correct, 0 otherwise."""
-    try:
-        y_pred = evaluator._get_pred(response)
-        y_gt = evaluator._get_gt(metadata)
-        result = evaluator._evaluate_one(y_gt, y_pred)
-        return int(result.get("correct", 0))
-    except Exception:
-        return 0
+def evaluate_per_row(result_df: pd.DataFrame, evaluators: dict) -> pd.DataFrame:
+    """Run MMTU evaluators via parse_raw_result to get per-row scores.
+
+    Returns DataFrame with: task, test_case, score, metric_type.
+    - acc tasks: score is 0..1 (correct)
+    - f1 tasks: score is per-row F1 from precision/recall
+    """
+    all_results = []
+
+    for task, group in result_df.groupby("task"):
+        evaluator = evaluators.get(task)
+        if evaluator is None:
+            for _, row in group.iterrows():
+                meta = json.loads(row["metadata"])
+                all_results.append({
+                    "task": task,
+                    "test_case": meta.get("test_case", ""),
+                    "score": -1.0,
+                    "metric_type": "unknown",
+                })
+            continue
+
+        try:
+            parsed = evaluator.parse_raw_result(group)
+        except Exception as e:
+            print(f"  Warning: could not evaluate {task}: {e}")
+            for _, row in group.iterrows():
+                meta = json.loads(row["metadata"])
+                all_results.append({
+                    "task": task,
+                    "test_case": meta.get("test_case", ""),
+                    "score": -1.0,
+                    "metric_type": "error",
+                })
+            continue
+
+        is_f1 = task in F1_TASKS
+        for _, prow in parsed.iterrows():
+            test_case = prow.get("test_case", "")
+            if is_f1:
+                prec = prow.get("precision") if pd.notna(prow.get("precision")) else 0
+                rec = prow.get("recall") if pd.notna(prow.get("recall")) else 0
+                prec = float(prec or 0)
+                rec = float(rec or 0)
+                if prec + rec > 0:
+                    score = 2 * prec * rec / (prec + rec)
+                else:
+                    score = 0.0
+                metric_type = "f1"
+            else:
+                score = float(prow.get("correct", 0) or 0)
+                metric_type = "acc"
+
+            all_results.append({
+                "task": task,
+                "test_case": str(test_case),
+                "score": score,
+                "metric_type": metric_type,
+            })
+
+    return pd.DataFrame(all_results)
 
 
 def histogram_table(values: list[float], label: str, n_bins: int = 10) -> str:
@@ -132,7 +191,7 @@ def main():
 
     output_path = Path(args.output) if args.output else result_path.with_suffix(".analysis.md")
 
-    # Load results
+    # Load results as list (for token counting) and DataFrame (for evaluators)
     rows = []
     with open(result_path) as f:
         for line in f:
@@ -144,33 +203,32 @@ def main():
 
     print(f"Loaded {len(rows)} results from {result_path.name}")
 
-    # Evaluators
-    evaluators = load_evaluators()
+    result_df = pd.read_json(result_path, lines=True)
+    if "task" not in result_df.columns:
+        result_df["task"] = result_df["metadata"].apply(lambda x: json.loads(x)["task"])
 
-    # Per-question analysis
-    records = []
+    # Run evaluation via MMTU evaluators
+    evaluators = load_evaluators()
+    eval_df = evaluate_per_row(result_df, evaluators)
+
+    # Token counts
+    token_data = []
     for row in rows:
-        metadata = json.loads(row["metadata"])
-        task = metadata["task"]
         response_raw = row.get("response", "")
         response = find_eom(response_raw)
-
-        input_tokens = count_tokens(row["prompt"])
-        output_tokens = count_tokens(response)
-
-        evaluator = evaluators.get(task)
-        correct = evaluate_row(evaluator, metadata, response) if evaluator else -1
-
-        records.append({
-            "task": task,
-            "dataset": metadata.get("dataset", ""),
+        metadata = json.loads(row["metadata"])
+        token_data.append({
+            "task": metadata["task"],
             "test_case": metadata.get("test_case", ""),
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
-            "correct": correct,
+            "input_tokens": count_tokens(row["prompt"]),
+            "output_tokens": count_tokens(response),
         })
+    token_df = pd.DataFrame(token_data)
 
-    df = pd.DataFrame(records)
+    # Merge token counts with evaluation scores
+    df = token_df.merge(eval_df, on=["task", "test_case"], how="left")
+    df["score"] = df["score"].fillna(-1)
+    df["metric_type"] = df["metric_type"].fillna("unknown")
 
     # Build markdown report
     md = []
@@ -181,29 +239,37 @@ def main():
 
     # --- Per-question table ---
     md.append("## Per-Question Metadata\n")
-    md.append("| # | Task | Test Case | Input Tokens | Output Tokens | Correct |")
-    md.append("|---|---|---|---|---|---|")
+    md.append("| # | Task | Test Case | Input Tok | Output Tok | Metric | Score |")
+    md.append("|---|---|---|---|---|---|---|")
     for i, r in df.iterrows():
-        correct_str = {1: "Yes", 0: "No", -1: "N/A"}[r["correct"]]
+        score = r["score"]
+        mtype = r["metric_type"]
+        if score < 0:
+            score_str = "N/A"
+        elif mtype == "acc":
+            score_str = "1.00" if score >= 0.5 else "0.00"
+        else:
+            score_str = f"{score:.3f}"
         md.append(f"| {i+1} | {r['task']} | {r['test_case']} | {r['input_tokens']} | "
-                  f"{r['output_tokens']} | {correct_str} |")
+                  f"{r['output_tokens']} | {mtype} | {score_str} |")
     md.append("")
 
-    # --- Correctness distribution ---
-    evaluated = df[df["correct"] >= 0]
-    md.append("## Correctness Summary\n")
+    # --- Score summary by task ---
+    evaluated = df[df["score"] >= 0]
+    md.append("## Score Summary by Task\n")
     if len(evaluated) > 0:
-        total = len(evaluated)
-        n_correct = int(evaluated["correct"].sum())
-        md.append(f"**Overall:** {n_correct}/{total} correct ({100*n_correct/total:.1f}%)\n")
-
-        md.append("| Task | Correct | Total | Accuracy |")
-        md.append("|---|---|---|---|")
+        md.append("| Task | Metric | N | Mean Score | Perfect (=1.0) | Zero (=0.0) |")
+        md.append("|---|---|---|---|---|---|")
         for task, grp in evaluated.groupby("task"):
-            tc = int(grp["correct"].sum())
-            tt = len(grp)
-            md.append(f"| {task} | {tc} | {tt} | {100*tc/tt:.1f}% |")
-        md.append("")
+            mtype = grp["metric_type"].iloc[0]
+            n = len(grp)
+            mean_score = grp["score"].mean()
+            perfect = int((grp["score"] >= 1.0 - 1e-9).sum())
+            zero = int((grp["score"] <= 1e-9).sum())
+            md.append(f"| {task} | {mtype} | {n} | {mean_score:.3f} | {perfect}/{n} | {zero}/{n} |")
+
+        overall_mean = evaluated["score"].mean()
+        md.append(f"\n**Overall mean score:** {overall_mean:.3f}\n")
     else:
         md.append("_No evaluatable tasks found._\n")
 
