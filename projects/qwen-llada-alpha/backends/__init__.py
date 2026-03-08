@@ -2,9 +2,11 @@
 
 from backends.base import InferenceBackend
 from backends.llada_backend import LLaDABackend
+from backends.qwen_backend import QwenBackend
 
 BACKENDS = {
     "llada": LLaDABackend,
+    "qwen": QwenBackend,
 }
 
 
