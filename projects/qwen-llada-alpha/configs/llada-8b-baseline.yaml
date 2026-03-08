@@ -15,8 +15,8 @@ inference:
   max_output_tokens: 512
   temperature: 0.0
   # LLaDA-specific
-  steps: 128
-  block_length: 128
+  steps: 256
+  block_length: 32
   remasking: low_confidence
   cfg_scale: 0.0
 
