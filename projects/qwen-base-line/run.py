@@ -44,31 +44,48 @@ def load_mmtu_dataset(hf_dataset: str, hf_split: str) -> list[dict]:
     return records
 
 
-def sample_records(records: list[dict], tasks: list[str],
-                   n_per_task: int, seed: int) -> list[dict]:
-    """Sample n_per_task records for each task from the full dataset."""
-    by_task: dict[str, list[dict]] = {}
+def sample_records_filtered(
+    records: list[dict],
+    tasks: list[str],
+    n_per_task: int,
+    seed: int,
+    max_input_tokens: int,
+) -> list[dict]:
+    """Sample n_per_task records per task, excluding prompts that exceed max_input_tokens.
+
+    Filters the full dataset by task membership and token count first,
+    then randomly samples from qualifying records per task.
+    Tasks with zero qualifying samples are reported and skipped.
+    """
+    from utils.count_token import count_tokens
+
+    task_set = set(tasks)
+    by_task: dict[str, list[dict]] = {t: [] for t in tasks}
+    skipped_counts: dict[str, int] = {t: 0 for t in tasks}
+
     for rec in records:
         meta = json.loads(rec["metadata"])
         task = meta["task"]
-        if task in tasks:
-            by_task.setdefault(task, []).append(rec)
-
-    missing = set(tasks) - set(by_task.keys())
-    if missing:
-        print(f"  WARNING: Tasks not found in dataset: {missing}")
+        if task not in task_set:
+            continue
+        if count_tokens(rec["prompt"]) > max_input_tokens:
+            skipped_counts[task] += 1
+            continue
+        by_task[task].append(rec)
 
     rng = random.Random(seed)
     sampled = []
     for task in sorted(tasks):
-        pool = by_task.get(task, [])
-        n = min(n_per_task, len(pool))
-        if n == 0:
-            print(f"  WARNING: No records for task '{task}'")
+        pool = by_task[task]
+        total = len(pool) + skipped_counts[task]
+        if len(pool) == 0:
+            print(f"  {task}: 0/{total} fit ≤{max_input_tokens} tokens — SKIPPED")
             continue
+        n = min(n_per_task, len(pool))
         chosen = rng.sample(pool, n)
         sampled.extend(chosen)
-        print(f"  {task}: sampled {n}/{len(pool)}")
+        print(f"  {task}: sampled {n}/{len(pool)} qualifying"
+              f" ({skipped_counts[task]}/{total} exceeded token limit)")
 
     print(f"  Total sampled: {len(sampled)}")
     return sampled
@@ -146,36 +163,25 @@ def _run_phase(phase_name: str, tasks: list[str], n_per_task: int,
     print("=" * 60)
 
     # 1. Health check
-    print("\n[1/4] Checking vLLM server...")
+    print("\n[1/3] Checking vLLM server...")
     if not check_vllm_health(VLLM_BASE_URL):
         print("FATAL: vLLM server not available. Is it running?")
         sys.exit(1)
 
-    # 2. Load & sample
-    print("\n[2/4] Loading and sampling dataset...")
+    # 2. Load, filter by token limit, and sample
+    print("\n[2/3] Loading and sampling dataset...")
     records = load_mmtu_dataset(HF_DATASET, HF_SPLIT)
-    sampled = sample_records(records, tasks, n_per_task, RANDOM_SEED)
 
-    # 2b. Filter out prompts exceeding token limit
     mmtu_root_str = str(mmtu_root)
     if mmtu_root_str not in sys.path:
         sys.path.insert(0, mmtu_root_str)
-    from utils.count_token import count_tokens_mp
 
-    print(f"\n  Filtering prompts > {MAX_INPUT_TOKENS:,} tokens...")
-    prompts = [rec["prompt"] for rec in sampled]
-    token_counts = count_tokens_mp(prompts)
-    before = len(sampled)
-    sampled = [rec for rec, tc in zip(sampled, token_counts)
-               if tc <= MAX_INPUT_TOKENS]
-    skipped = before - len(sampled)
-    if skipped:
-        print(f"  Skipped {skipped}/{before} prompts exceeding"
-              f" {MAX_INPUT_TOKENS:,} tokens")
-    print(f"  Kept {len(sampled)} prompts")
+    sampled = sample_records_filtered(
+        records, tasks, n_per_task, RANDOM_SEED, MAX_INPUT_TOKENS
+    )
 
     # 3. Write input JSONL and run inference
-    print("\n[3/4] Running inference...")
+    print("\n[3/3] Running inference & evaluation...")
     input_file = output_dir / f"{phase_name}.input.jsonl"
     with open(input_file, "w") as f:
         for rec in sampled:
@@ -186,8 +192,7 @@ def _run_phase(phase_name: str, tasks: list[str], n_per_task: int,
                   VLLM_BASE_URL, VLLM_MODEL, VLLM_API_KEY,
                   MODEL_ALIAS, TEMPERATURE)
 
-    # 4. Evaluate
-    print("\n[4/4] Running evaluation...")
+    # Evaluate
     rc = run_evaluation(output_file, mmtu_root, n_jobs=eval_n_jobs)
     if rc != 0:
         print(f"Evaluation exited with code {rc}")
