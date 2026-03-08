@@ -57,22 +57,33 @@ def sample_records_filtered(
     then randomly samples from qualifying records per task.
     Tasks with zero qualifying samples are reported and skipped.
     """
-    from utils.count_token import count_tokens
+    from utils.count_token import count_tokens_mp
 
     task_set = set(tasks)
-    by_task: dict[str, list[dict]] = {t: [] for t in tasks}
-    skipped_counts: dict[str, int] = {t: 0 for t in tasks}
 
+    # 1. Collect task-relevant records
+    task_records: list[tuple[str, dict]] = []  # (task, record)
     for rec in records:
         meta = json.loads(rec["metadata"])
         task = meta["task"]
-        if task not in task_set:
-            continue
-        if count_tokens(rec["prompt"]) > max_input_tokens:
-            skipped_counts[task] += 1
-            continue
-        by_task[task].append(rec)
+        if task in task_set:
+            task_records.append((task, rec))
 
+    # 2. Batch token count
+    prompts = [rec["prompt"] for _, rec in task_records]
+    token_counts = count_tokens_mp(prompts)
+
+    # 3. Filter by token limit and bucket by task
+    by_task: dict[str, list[dict]] = {t: [] for t in tasks}
+    skipped_counts: dict[str, int] = {t: 0 for t in tasks}
+
+    for (task, rec), tc in zip(task_records, token_counts):
+        if tc > max_input_tokens:
+            skipped_counts[task] += 1
+        else:
+            by_task[task].append(rec)
+
+    # 4. Sample
     rng = random.Random(seed)
     sampled = []
     for task in sorted(tasks):
