@@ -27,8 +27,10 @@ served via vLLM on RunPod.
   filesystem paths for ground truth; fails on RunPod.
 - **Runtime model download**: Weights not baked into image (~11GB vs ~25GB).
   Cached on RunPod network volume (`/workspace/.cache/huggingface`).
-- **Token filtering**: Prompts exceeding `MAX_INPUT_TOKENS` (3,584) are dropped
-  before inference, reserving 512 tokens for output within the 4096 context window.
+- **Filter-then-sample**: Records are filtered by token count first (≤`MAX_INPUT_TOKENS`
+  = 3,584), then randomly sampled per task. Tasks with zero qualifying samples are
+  skipped. This ensures all sampled prompts fit within the 4096 context window
+  (reserving 512 tokens for output).
 - **vLLM context**: `--max-model-len` is parameterized via `$VLLM_MAX_MODEL_LEN`
   env var (default 4096, matching LLada's limit). Was hardcoded to 65536.
 
