@@ -190,7 +190,8 @@ def run_experiment(config: dict, config_path: str) -> None:
     )
 
     # 3. Run inference
-    print(f"\n[3/4] Running inference on {len(sampled)} samples...")
+    batch_size = inference_cfg.get("batch_size", 1)
+    print(f"\n[3/4] Running inference on {len(sampled)} samples (batch_size={batch_size})...")
     input_file = output_dir / "input.jsonl"
     result_file = output_dir / f"{experiment_name}.{model_alias}.result.jsonl"
 
@@ -207,37 +208,43 @@ def run_experiment(config: dict, config_path: str) -> None:
                 existing_results.add(row.get("prompt", "")[:200])
         print(f"  Resuming: {len(existing_results)} existing results found.")
 
+    # Filter out already-processed samples
+    pending = [rec for rec in sampled if rec["prompt"][:200] not in existing_results]
     completed = len(existing_results)
     total = len(sampled)
 
     with open(result_file, "a") as out_f:
-        for i, rec in enumerate(sampled):
-            # Skip already-processed prompts (resumption)
-            if rec["prompt"][:200] in existing_results:
-                continue
+        for batch_start in range(0, len(pending), batch_size):
+            batch = pending[batch_start:batch_start + batch_size]
+            batch_prompts = [rec["prompt"] for rec in batch]
 
-            completed += 1
-            print(f"  [{completed}/{total}] Generating response...", end=" ", flush=True)
+            print(f"  [{completed + 1}-{completed + len(batch)}/{total}] "
+                  f"Generating batch of {len(batch)}...", end=" ", flush=True)
             t0 = time.time()
 
             try:
-                response = backend.generate(rec["prompt"])
+                if len(batch) == 1:
+                    responses = [backend.generate(batch_prompts[0])]
+                else:
+                    responses = backend.generate_batch(batch_prompts)
                 elapsed = time.time() - t0
-                print(f"done ({elapsed:.1f}s)")
+                print(f"done ({elapsed:.1f}s, {elapsed / len(batch):.1f}s/sample)")
             except Exception as e:
                 elapsed = time.time() - t0
                 print(f"ERROR ({elapsed:.1f}s): {e}")
-                response = f"[ERROR] {e}"
+                responses = [f"[ERROR] {e}"] * len(batch)
 
-            result_row = {
-                "prompt": rec["prompt"],
-                "metadata": rec["metadata"],
-                "response": response,
-                "model": model_alias,
-                "experiment": experiment_name,
-            }
-            out_f.write(json.dumps(result_row) + "\n")
+            for rec, response in zip(batch, responses):
+                result_row = {
+                    "prompt": rec["prompt"],
+                    "metadata": rec["metadata"],
+                    "response": response,
+                    "model": model_alias,
+                    "experiment": experiment_name,
+                }
+                out_f.write(json.dumps(result_row) + "\n")
             out_f.flush()
+            completed += len(batch)
 
     # 4. Evaluate
     print("\n[4/4] Evaluating results...")

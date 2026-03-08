@@ -1,5 +1,7 @@
 """LLaDA inference backend — diffusion-based text generation."""
 
+from typing import List
+
 import torch
 from transformers import AutoModel, AutoTokenizer
 
@@ -78,6 +80,49 @@ class LLaDABackend(InferenceBackend):
         generated_ids = output[0, input_ids.shape[1]:]
         response = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
         return response.strip()
+
+    def generate_batch(self, prompts: List[str]) -> List[str]:
+        # Tokenize all prompts
+        all_input_ids = []
+        for prompt in prompts:
+            messages = [{"role": "user", "content": prompt}]
+            text = self.tokenizer.apply_chat_template(
+                messages, add_generation_prompt=True, tokenize=False
+            )
+            ids = self.tokenizer(text)["input_ids"]
+            all_input_ids.append(ids)
+
+        # Left-pad to the longest prompt in the batch
+        max_len = max(len(ids) for ids in all_input_ids)
+        pad_id = self.tokenizer.pad_token_id or 0
+        padded = []
+        prompt_lengths = []
+        for ids in all_input_ids:
+            pad_len = max_len - len(ids)
+            padded.append([pad_id] * pad_len + ids)
+            prompt_lengths.append(len(ids))
+
+        batch_tensor = torch.tensor(padded, device=self.device)
+
+        output = generate(
+            self.model,
+            batch_tensor,
+            steps=self.steps,
+            gen_length=self.gen_length,
+            block_length=self.block_length,
+            temperature=self.temperature,
+            cfg_scale=self.cfg_scale,
+            remasking=self.remasking,
+            mask_id=self.MASK_ID,
+        )
+
+        # Decode each result — generated tokens start after the (padded) prompt
+        responses = []
+        for i in range(len(prompts)):
+            generated_ids = output[i, max_len:]
+            response = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
+            responses.append(response.strip())
+        return responses
 
     def health_check(self) -> bool:
         return self.model is not None

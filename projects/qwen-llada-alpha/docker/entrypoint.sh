@@ -19,8 +19,8 @@ echo "  Model weights ready."
 echo ""
 echo "Run experiments with:"
 echo "  cd /workspace/MMTU"
-echo "  python projects/qwen-llada-alpha/run.py run projects/qwen-llada-alpha/configs/llada-8b-smoke.yaml"
-echo "  python projects/qwen-llada-alpha/run.py run projects/qwen-llada-alpha/configs/llada-8b-baseline.yaml"
+echo "  python projects/qwen-llada-alpha/run.py run configs/llada-8b-smoke.yaml"
+echo "  python projects/qwen-llada-alpha/run.py run configs/llada-8b-baseline.yaml"
 echo ""
 
 exec sleep infinity
