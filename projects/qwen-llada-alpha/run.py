@@ -247,10 +247,16 @@ def run_experiment(config: dict, config_path: str) -> None:
             completed += len(batch)
 
     # 4. Evaluate
-    print("\n[4/4] Evaluating results...")
+    print("\n[4/5] Evaluating results...")
     rc = run_evaluation(result_file, _get_mmtu_root())
     if rc != 0:
         print(f"Evaluation exited with code {rc}")
+
+    # 5. Post-run analysis
+    print("\n[5/5] Running post-run analysis...")
+    rc2 = run_analysis(result_file)
+    if rc2 != 0:
+        print(f"Analysis exited with code {rc2}")
     else:
         print(f"\nExperiment '{experiment_name}' complete!")
         print(f"Results: {output_dir}")
@@ -265,6 +271,15 @@ def run_evaluation(result_file: Path, mmtu_root: Path, n_jobs: int = -1) -> int:
     ]
     print(f"  Running: {' '.join(cmd)}")
     proc = subprocess.run(cmd, cwd=str(mmtu_root))
+    return proc.returncode
+
+
+def run_analysis(result_file: Path) -> int:
+    """Run analyze.py on the result file."""
+    analyze_script = _get_project_dir() / "analyze.py"
+    cmd = [sys.executable, str(analyze_script), str(result_file)]
+    print(f"  Running: {' '.join(cmd)}")
+    proc = subprocess.run(cmd, cwd=str(_get_mmtu_root()))
     return proc.returncode
 
 
