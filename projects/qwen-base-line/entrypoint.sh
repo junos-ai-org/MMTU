@@ -12,7 +12,7 @@ fi
 LOG_FILE="/workspace/vllm.log"
 MODEL="Qwen/Qwen2.5-7B-Instruct"
 PORT=8000
-MAX_MODEL_LEN="${VLLM_MAX_MODEL_LEN:-131072}"
+MAX_MODEL_LEN="${VLLM_MAX_MODEL_LEN:-4096}"
 HEALTH_URL="http://localhost:${PORT}/v1/models"
 TIMEOUT=300
 
