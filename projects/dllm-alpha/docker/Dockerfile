@@ -15,6 +15,9 @@ RUN pip install --no-cache-dir \
 RUN pip install --no-cache-dir \
     transformers==4.49.0 accelerate==0.34.2
 
+# Qwen backend dependencies (vLLM for serving)
+RUN pip install --no-cache-dir vllm
+
 # MMTU code — install outside /workspace (RunPod mounts a volume there)
 COPY . /opt/MMTU
 
