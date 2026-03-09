@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Python dependencies — shared across all backends
 RUN pip install --no-cache-dir \
     pandas tabulate tiktoken tqdm xlsxwriter tenacity datasets openai azure-ai-inference \
-    pyyaml \
+    pyyaml pytest \
     && ln -sf "$(which python3)" /usr/local/bin/python
 
 # LLaDA backend dependencies

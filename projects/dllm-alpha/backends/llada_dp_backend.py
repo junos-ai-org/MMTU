@@ -8,6 +8,8 @@ threads driving four GPUs therefore achieve near-linear speedup without
 contention.
 """
 
+import time
+
 import torch
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List
@@ -92,6 +94,9 @@ class LLaDADataParallelBackend(LLaDABackend):
         indices = [s[0] for s in shard]
         shard_ids = [s[1] for s in shard]
 
+        print(f"    [{device}] starting {len(shard)} samples", flush=True)
+        t0 = time.time()
+
         # Left-pad to longest in this shard
         max_len = max(len(ids) for ids in shard_ids)
         pad_id = self.tokenizer.pad_token_id or 0
@@ -113,6 +118,10 @@ class LLaDADataParallelBackend(LLaDABackend):
             remasking=self.remasking,
             mask_id=self.MASK_ID,
         )
+
+        elapsed = time.time() - t0
+        print(f"    [{device}] done {len(shard)} samples in {elapsed:.1f}s "
+              f"({elapsed / len(shard):.1f}s/sample)", flush=True)
 
         results: list[tuple[int, str]] = []
         for i, orig_idx in enumerate(indices):
