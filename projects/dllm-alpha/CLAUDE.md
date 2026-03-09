@@ -38,14 +38,11 @@ projects/dllm-alpha/
 └── output/                         # Auto-created per experiment
 ```
 
-## Tasks (9 MMTU tasks)
+## Tasks (6 MMTU tasks)
 
 | Task | Abbrev | Metric |
 |---|---|---|
 | Data-transform-reshape | TTBR | acc |
-| Transform-by-output-target-schema | TTBS | acc |
-| Transform-by-input-output-table | TTBT | acc |
-| Data-transform-pbe | PTBE | acc |
 | Formula-prediction-context | FBC | acc |
 | semantic-transform | STBE | acc |
 | Arithmetic-Relationship | AR | f1 |

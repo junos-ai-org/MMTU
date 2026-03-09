@@ -27,9 +27,6 @@ dataset:
   total_samples: 25       # flat random sample across all tasks
   tasks:
     - Data-transform-reshape
-    - Transform-by-output-target-schema
-    - Transform-by-input-output-table
-    - Data-transform-pbe
     - Formula-prediction-context
     - semantic-transform
     - Arithmetic-Relationship

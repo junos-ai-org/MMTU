@@ -38,9 +38,6 @@ def load_evaluators():
         sys.path.insert(0, str(mmtu_root))
 
     from evaluators.data_transform_reshape_evaluator import DataTransformReshapeEvaluator
-    from evaluators.transform_by_output_target_schema_evaluator import TransformByTargetSchemaEvaluator
-    from evaluators.transform_by_input_output_evaluator import TransformByInputOutputEvaluator
-    from evaluators.data_transform_pbe_evaluator import DTPBEBaseEvaluator
     from evaluators.formula_context_evaluator import FormulaPredictContextEvaluator
     from evaluators.semantic_transform_evaluator import SemanticTransformEvaluator
     from evaluators.ar_evaluator import AREvaluator
@@ -49,9 +46,6 @@ def load_evaluators():
 
     return {
         "Data-transform-reshape": DataTransformReshapeEvaluator(),
-        "Transform-by-output-target-schema": TransformByTargetSchemaEvaluator(),
-        "Transform-by-input-output-table": TransformByInputOutputEvaluator(),
-        "Data-transform-pbe": DTPBEBaseEvaluator(),
         "Formula-prediction-context": FormulaPredictContextEvaluator(),
         "semantic-transform": SemanticTransformEvaluator(),
         "Arithmetic-Relationship": AREvaluator(),
