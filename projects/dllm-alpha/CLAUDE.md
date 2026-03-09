@@ -97,6 +97,11 @@ python -m vllm.entrypoints.openai.api_server \
 ## Key Decisions
 - **Data-parallel LLaDA**: LLaDA-8B (~16GB bf16) fits on a single GPU. We load 4 replicas
   and split batches across them for 4x throughput.
+- **Concurrent GPU dispatch**: `generate_batch` uses `ThreadPoolExecutor` to run all GPU
+  shards in parallel. This works because CUDA kernels release the Python GIL — each thread
+  spends >99% of wall time inside GPU kernels (forward passes, softmax, topk) and holds
+  the GIL only for microseconds of Python dispatch between ops. Threads driving separate
+  GPUs achieve near-linear speedup with negligible GIL contention.
 - **Vendored generate.py**: Copied from LLaDA repo (SHA 0474aa1) to avoid cross-repo dep.
 - **Flat sampling for smoke**: Smoke tests draw 25 random samples across all tasks
   (not per-task) for quick validation.
