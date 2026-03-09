@@ -270,6 +270,12 @@ def run_experiment(config: dict, config_path: str) -> None:
             completed += len(batch)
 
     # 4. Evaluate
+    # Some evaluators (Data-transform-pbe, Transform-by-output-target-schema,
+    # Transform-by-input-output-table) execute generated code via subprocess
+    # and need MMTU_HOME to locate a temp directory for that.
+    import os
+    os.environ.setdefault("MMTU_HOME", str(_get_mmtu_root()))
+
     print("\n[4/5] Evaluating results...")
     rc = run_evaluation(result_file, _get_mmtu_root())
     if rc != 0:
