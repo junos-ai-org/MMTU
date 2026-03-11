@@ -19,7 +19,7 @@ inference:
   block_length: 64        # semi-autoregressive block size
   remasking: random
   cfg_scale: 0.0
-  batch_size: 64
+  batch_size: 32
 
 dataset:
   name: MMTU-benchmark/MMTU
