@@ -33,9 +33,41 @@ def _get_project_dir() -> Path:
     return Path(__file__).resolve().parent
 
 
-def _get_output_dir(experiment_name: str) -> Path:
-    """Return and create the experiment output directory."""
-    out = _get_project_dir() / "output" / experiment_name
+def _make_run_key(tag: str | None = None) -> str:
+    """Generate a timestamped run key, optionally with a tag suffix."""
+    key = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    if tag:
+        key = f"{key}_{tag}"
+    return key
+
+
+def _find_latest_run(experiment_name: str) -> Path | None:
+    """Return the most recent run directory for an experiment, or None."""
+    exp_root = _get_project_dir() / "output" / experiment_name
+    if not exp_root.exists():
+        return None
+    latest_link = exp_root / "latest"
+    if latest_link.is_symlink() and latest_link.resolve().is_dir():
+        return latest_link.resolve()
+    # Fallback: find newest timestamped directory
+    run_dirs = sorted(
+        [d for d in exp_root.iterdir() if d.is_dir() and not d.is_symlink()],
+        key=lambda d: d.name,
+    )
+    return run_dirs[-1] if run_dirs else None
+
+
+def _update_latest_symlink(run_dir: Path) -> None:
+    """Point the 'latest' symlink at run_dir."""
+    latest = run_dir.parent / "latest"
+    if latest.is_symlink() or latest.exists():
+        latest.unlink()
+    latest.symlink_to(run_dir.name)
+
+
+def _get_output_dir(experiment_name: str, run_key: str) -> Path:
+    """Return and create the run output directory."""
+    out = _get_project_dir() / "output" / experiment_name / run_key
     out.mkdir(parents=True, exist_ok=True)
     return out
 
@@ -151,8 +183,19 @@ def sample_records(
     return sampled
 
 
-def run_experiment(config: dict, config_path: str) -> None:
-    """Execute a full experiment: load model, sample data, run inference, evaluate."""
+def run_experiment(
+    config: dict,
+    config_path: str,
+    resume: bool | str = False,
+    tag: str | None = None,
+) -> None:
+    """Execute a full experiment: load model, sample data, run inference, evaluate.
+
+    Args:
+        resume: False for a fresh run, True to resume the latest run, or a
+                specific run key string to resume that run.
+        tag: Optional tag appended to the run key (e.g. "oom-fix").
+    """
     exp = config["experiment"]
     model_cfg = config["model"]
     inference_cfg = config["inference"]
@@ -162,10 +205,32 @@ def run_experiment(config: dict, config_path: str) -> None:
     seed = exp["seed"]
     model_alias = model_cfg["alias"]
 
-    output_dir = _get_output_dir(experiment_name)
+    # Resolve run key
+    if resume:
+        if isinstance(resume, str):
+            # Resume a specific run
+            run_key = resume
+            candidate = _get_project_dir() / "output" / experiment_name / run_key
+            if not candidate.exists():
+                print(f"Error: run '{run_key}' not found in output/{experiment_name}/")
+                sys.exit(1)
+        else:
+            # Resume latest
+            latest = _find_latest_run(experiment_name)
+            if latest is None:
+                print(f"Error: no previous runs found for '{experiment_name}'")
+                sys.exit(1)
+            run_key = latest.name
+        print(f"Resuming run: {run_key}")
+    else:
+        run_key = _make_run_key(tag)
+
+    output_dir = _get_output_dir(experiment_name, run_key)
+    _update_latest_symlink(output_dir)
 
     print("=" * 60)
     print(f"EXPERIMENT: {experiment_name}")
+    print(f"Run key:  {run_key}")
     print(f"Backend: {model_cfg['backend']} | Model: {model_cfg['model_path']}")
     print(f"Output: {output_dir}")
     print("=" * 60)
@@ -315,7 +380,11 @@ def run_analysis(result_file: Path) -> int:
 def cmd_run(args):
     """Run an experiment from a YAML config."""
     config = load_config(args.config)
-    run_experiment(config, args.config)
+    # --resume with no value → True, --resume KEY → "KEY", absent → False
+    resume = args.resume if args.resume is not None else False
+    if resume == "":
+        resume = True
+    run_experiment(config, args.config, resume=resume, tag=args.tag)
 
 
 def cmd_evaluate(args):
@@ -329,41 +398,67 @@ def cmd_evaluate(args):
 
 
 def cmd_list(args):
-    """List all experiments and their status."""
+    """List all experiments and their runs."""
     output_root = _get_project_dir() / "output"
     if not output_root.exists():
         print("No experiments found.")
         return
 
-    experiments = sorted(output_root.iterdir())
+    experiments = sorted(
+        [d for d in output_root.iterdir() if d.is_dir()],
+        key=lambda d: d.name,
+    )
     if not experiments:
         print("No experiments found.")
         return
 
-    print(f"{'Experiment':<35} {'Status':<12} {'Timestamp':<22}")
-    print("-" * 70)
-
     for exp_dir in experiments:
-        if not exp_dir.is_dir():
-            continue
-        prov_file = exp_dir / "provenance.json"
-        if prov_file.exists():
-            with open(prov_file) as f:
-                prov = json.load(f)
-            timestamp = prov.get("timestamp", "unknown")[:19]
-        else:
-            timestamp = "unknown"
+        # Detect old-style (flat) vs new-style (run key subdirs)
+        run_dirs = sorted(
+            [d for d in exp_dir.iterdir() if d.is_dir() and not d.is_symlink()],
+            key=lambda d: d.name,
+        )
 
-        # Check for result files
-        result_files = list(exp_dir.glob("*.result.jsonl"))
-        if result_files:
-            with open(result_files[0]) as f:
-                n_results = sum(1 for _ in f)
-            status = f"{n_results} results"
-        else:
-            status = "no results"
+        # Old-style: result files directly in exp_dir
+        flat_results = list(exp_dir.glob("*.result.jsonl"))
+        if flat_results and not run_dirs:
+            run_dirs = [exp_dir]
 
-        print(f"{exp_dir.name:<35} {status:<12} {timestamp:<22}")
+        latest_link = exp_dir / "latest"
+        latest_target = (
+            latest_link.resolve().name
+            if latest_link.is_symlink()
+            else None
+        )
+
+        print(f"\n{exp_dir.name}  ({len(run_dirs)} run{'s' if len(run_dirs) != 1 else ''})")
+        print(f"  {'Run key':<30} {'Results':<12} {'Timestamp':<22}")
+        print(f"  {'-' * 64}")
+
+        for run_dir in run_dirs:
+            prov_file = run_dir / "provenance.json"
+            if prov_file.exists():
+                with open(prov_file) as f:
+                    prov = json.load(f)
+                timestamp = prov.get("timestamp", "unknown")[:19]
+            else:
+                timestamp = "unknown"
+
+            result_files = list(run_dir.glob("*.result.jsonl"))
+            if result_files:
+                with open(result_files[0]) as f:
+                    n_results = sum(1 for _ in f)
+                status = f"{n_results} results"
+            else:
+                status = "no results"
+
+            label = run_dir.name
+            if run_dir == exp_dir:
+                label = "(flat)"
+            elif label == latest_target:
+                label = f"{label} ← latest"
+
+            print(f"  {label:<30} {status:<12} {timestamp:<22}")
 
 
 def main():
@@ -375,6 +470,14 @@ def main():
     # run
     sub_run = subparsers.add_parser("run", help="Run an experiment from a YAML config")
     sub_run.add_argument("config", type=str, help="Path to experiment YAML config")
+    sub_run.add_argument(
+        "--resume", nargs="?", const="", default=None,
+        help="Resume a previous run (latest if no key given, or specify a run key)",
+    )
+    sub_run.add_argument(
+        "--tag", type=str, default=None,
+        help="Tag appended to run key (e.g. --tag oom-fix → 20260311-143022_oom-fix)",
+    )
 
     # evaluate
     sub_eval = subparsers.add_parser("evaluate", help="Evaluate a result file")
