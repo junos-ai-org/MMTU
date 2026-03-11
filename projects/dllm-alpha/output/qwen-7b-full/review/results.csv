@@ -49,31 +49,31 @@ Data-transform-reshape__stack_test25,Data-transform-reshape,"[{""operator"": ""s
 Data-transform-reshape__pivot_test4,Data-transform-reshape,"[{""operator"": ""pivot"", ""pivot_row_frequency"": 4}]","[{""stack_start_idx"": 1, ""stack_end_idx"": 3, ""operator"": ""subtitle""}]",0.0
 Data-transform-reshape__explode_test16,Data-transform-reshape,"[{""operator"": ""explode"", ""explode_column_idx"": 1}]","[{""explode_column_idx"": 1, ""operator"": ""explode""}]",1.0
 Data-transform-reshape__subtitle_test11,Data-transform-reshape,"[{""operator"": ""subtitle""}]","[{""wide_to_long_start_idx"": 1, ""wide_to_long_end_idx"": 11, ""operator"": ""wide_to_long""}]",0.0
-Formula-prediction-context__case-464,Formula-prediction-context,=AVERAGE(C10:C406),=B8-B10,0.0
-Formula-prediction-context__case-433,Formula-prediction-context,"=K55+ROUND(10*LOG10(F55),0)",=MAX(O55:R55),0.0
-Formula-prediction-context__case-751,Formula-prediction-context,=H54,=2.7508,0.0
-Formula-prediction-context__case-166,Formula-prediction-context,=Z8969,=BN8969,0.0
-Formula-prediction-context__case-529,Formula-prediction-context,=CLMIN,=MIN(D48:D50),0.0
-Formula-prediction-context__case-417,Formula-prediction-context,"=""EFFECTIVE ""&TEXT(DATE(YEAR(B8),MONTH(B8),DAY(B8)),""mmmm"")&"" ""&DAY(B8)&"" - ""&DAY(EOMONTH(B8,0))&"", ""&YEAR(B8)&""""",=B13,0.0
-Formula-prediction-context__case-810,Formula-prediction-context,=SUM(K8:K31),=E32+D32*C32,0.0
-Formula-prediction-context__case-920,Formula-prediction-context,"=CEILING(C21/CLOCK_PERIOD,1)-1",=B21*F18/F17,0.0
-Formula-prediction-context__case-879,Formula-prediction-context,=A4/A2,=B8-A7,0.0
-Formula-prediction-context__case-663,Formula-prediction-context,"=ROUND(((($C17+F17)*E17)/10000),4)+$D17",=B17*F17,0.0
-Formula-prediction-context__case-696,Formula-prediction-context,=A3+0.01,=B4-A4,0.0
-Formula-prediction-context__case-883,Formula-prediction-context,=10*LOG(10^(AFR8/10)+10^(AFS8/10)),=B8+B9+B10+B11+B12+B13+B14+B15+B16+B17+B18,0.0
-Formula-prediction-context__case-221,Formula-prediction-context,=K32-L32,"{""formula"": ""=SUMIFS(W22:W42,V22:V42,""4.0"",U22:U42,""25 Total"")""}",0.0
-Formula-prediction-context__case-365,Formula-prediction-context,"=IF($A10 = """","""",_xlfn.IFNA(VLOOKUP($O10,erate,4,FALSE),_xlfn.IFNA(VLOOKUP($O10,nonerate,4,FALSE),""NOT FOUND"")))","{""formula"": ""=IF(C10=""Not Found"", ""Not Found"", D10-B10)""}",0.0
-Formula-prediction-context__case-93,Formula-prediction-context,=F337,=B338,0.0
-Formula-prediction-context__case-330,Formula-prediction-context,=DEC2HEX(E39),=B39,0.0
-Formula-prediction-context__case-103,Formula-prediction-context,"=IF(YEAR($B$8)<2015,$I$23,$I$24)",=1.6275,0.0
-Formula-prediction-context__case-544,Formula-prediction-context,=AV10*-J56,=0.0,0.0
-Formula-prediction-context__case-435,Formula-prediction-context,"=""EFFECTIVE ""&TEXT(DATE(YEAR(B8),MONTH(B8),DAY(B8)),""mmmm"")&"" ""&DAY(B8)&"" - ""&DAY(EOMONTH(B8,0))&"", ""&YEAR(B8)&""""",=D13,0.0
-Formula-prediction-context__case-543,Formula-prediction-context,"=IF($A10 = """","""",_xlfn.IFNA(VLOOKUP($O10,erate,7,FALSE),_xlfn.IFNA(VLOOKUP($O10,nonerate,7,FALSE),""NOT FOUND"")))","{""formula"": ""=IF(C10=""[Target Cell]"", """", IF(D10-E10=0, ""Green"", ""Red""))""}",0.0
-Formula-prediction-context__case-135,Formula-prediction-context,"=IF(C17="""",0,ROUND(D17,2)*H17)",=SUM(F18:F27),0.0
-Formula-prediction-context__case-875,Formula-prediction-context,"=K15+ROUND(10*LOG10(F15),0)",=17,0.0
-Formula-prediction-context__case-797,Formula-prediction-context,=K31/(1-J37)-K31,=0.8937+0.012,0.0
-Formula-prediction-context__case-347,Formula-prediction-context,"=IF(SUM(K62)=0,0,ROUND((($K$23*K52)*$K$45/10^6)+($K$48*K52),6))",0.078362,0.0
-Formula-prediction-context__case-85,Formula-prediction-context,=((D26*E26)/(B26*C26))*100,=I27*J27/I26,0.0
+Formula-prediction-context__case-464,Formula-prediction-context,`=AVERAGE(C10:C406)`,`=B8-B10`,0.0
+Formula-prediction-context__case-433,Formula-prediction-context,"`=K55+ROUND(10*LOG10(F55),0)`",`=MAX(O55:R55)`,0.0
+Formula-prediction-context__case-751,Formula-prediction-context,`=H54`,`=2.7508`,0.0
+Formula-prediction-context__case-166,Formula-prediction-context,`=Z8969`,`=BN8969`,0.0
+Formula-prediction-context__case-529,Formula-prediction-context,`=CLMIN`,`=MIN(D48:D50)`,0.0
+Formula-prediction-context__case-417,Formula-prediction-context,"`=""EFFECTIVE ""&TEXT(DATE(YEAR(B8),MONTH(B8),DAY(B8)),""mmmm"")&"" ""&DAY(B8)&"" - ""&DAY(EOMONTH(B8,0))&"", ""&YEAR(B8)&""""`",`=B13`,0.0
+Formula-prediction-context__case-810,Formula-prediction-context,`=SUM(K8:K31)`,`=E32+D32*C32`,0.0
+Formula-prediction-context__case-920,Formula-prediction-context,"`=CEILING(C21/CLOCK_PERIOD,1)-1`",`=B21*F18/F17`,0.0
+Formula-prediction-context__case-879,Formula-prediction-context,`=A4/A2`,`=B8-A7`,0.0
+Formula-prediction-context__case-663,Formula-prediction-context,"`=ROUND(((($C17+F17)*E17)/10000),4)+$D17`",`=B17*F17`,0.0
+Formula-prediction-context__case-696,Formula-prediction-context,`=A3+0.01`,`=B4-A4`,0.0
+Formula-prediction-context__case-883,Formula-prediction-context,`=10*LOG(10^(AFR8/10)+10^(AFS8/10))`,`=B8+B9+B10+B11+B12+B13+B14+B15+B16+B17+B18`,0.0
+Formula-prediction-context__case-221,Formula-prediction-context,`=K32-L32`,"`{""formula"": ""=SUMIFS(W22:W42,V22:V42,""4.0"",U22:U42,""25 Total"")""}`",0.0
+Formula-prediction-context__case-365,Formula-prediction-context,"`=IF($A10 = """","""",_xlfn.IFNA(VLOOKUP($O10,erate,4,FALSE),_xlfn.IFNA(VLOOKUP($O10,nonerate,4,FALSE),""NOT FOUND"")))`","`{""formula"": ""=IF(C10=""Not Found"", ""Not Found"", D10-B10)""}`",0.0
+Formula-prediction-context__case-93,Formula-prediction-context,`=F337`,`=B338`,0.0
+Formula-prediction-context__case-330,Formula-prediction-context,`=DEC2HEX(E39)`,`=B39`,0.0
+Formula-prediction-context__case-103,Formula-prediction-context,"`=IF(YEAR($B$8)<2015,$I$23,$I$24)`",`=1.6275`,0.0
+Formula-prediction-context__case-544,Formula-prediction-context,`=AV10*-J56`,`=0.0`,0.0
+Formula-prediction-context__case-435,Formula-prediction-context,"`=""EFFECTIVE ""&TEXT(DATE(YEAR(B8),MONTH(B8),DAY(B8)),""mmmm"")&"" ""&DAY(B8)&"" - ""&DAY(EOMONTH(B8,0))&"", ""&YEAR(B8)&""""`",`=D13`,0.0
+Formula-prediction-context__case-543,Formula-prediction-context,"`=IF($A10 = """","""",_xlfn.IFNA(VLOOKUP($O10,erate,7,FALSE),_xlfn.IFNA(VLOOKUP($O10,nonerate,7,FALSE),""NOT FOUND"")))`","`{""formula"": ""=IF(C10=""[Target Cell]"", """", IF(D10-E10=0, ""Green"", ""Red""))""}`",0.0
+Formula-prediction-context__case-135,Formula-prediction-context,"`=IF(C17="""",0,ROUND(D17,2)*H17)`",`=SUM(F18:F27)`,0.0
+Formula-prediction-context__case-875,Formula-prediction-context,"`=K15+ROUND(10*LOG10(F15),0)`",`=17`,0.0
+Formula-prediction-context__case-797,Formula-prediction-context,`=K31/(1-J37)-K31`,`=0.8937+0.012`,0.0
+Formula-prediction-context__case-347,Formula-prediction-context,"`=IF(SUM(K62)=0,0,ROUND((($K$23*K52)*$K$45/10^6)+($K$48*K52),6))`",0.078362,0.0
+Formula-prediction-context__case-85,Formula-prediction-context,`=((D26*E26)/(B26*C26))*100`,`=I27*J27/I26`,0.0
 Functional-Dependency__case_264,Functional-Dependency,"[[""Line_Group"", ""Line""], [""Line_Group"", ""Group""]]","[[""Line_Group"", ""Group""], [""Line_Group"", ""Line""]]",1.0
 Functional-Dependency__case_57,Functional-Dependency,"[[""TerritoryKey"", ""SalesTerritoryKey""], [""TerritoryKey"", ""Region""], [""TerritoryKey"", ""Country""], [""TerritoryKey"", ""Continent""]]",[],0.0
 Functional-Dependency__case_111,Functional-Dependency,"[[""SalesTaxTypeID"", ""SalesTaxType""], [""SalesTaxTypeID"", ""Description""]]","[[""SalesTaxTypeID"", ""SalesTaxType""]]",0.6666666666666666

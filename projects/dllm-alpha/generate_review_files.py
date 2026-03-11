@@ -12,6 +12,17 @@ import ast
 from collections import defaultdict
 from pathlib import Path
 
+def _safe_csv(val):
+    """Wrap values that start with =, +, -, @ in backticks so Google Sheets won't interpret them as formulas."""
+    s = str(val)
+    if s and s[0] in ('=', '+', '-', '@'):
+        return f'`{s}`'
+    # Also check inside JSON arrays/objects for leading =
+    if s.startswith('[') or s.startswith('{'):
+        if '= ' in s or '"=' in s:
+            return f'`{s}`'
+    return s
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 RESULT_FILE = SCRIPT_DIR / "output/qwen-7b-full/qwen-7b-full.Qwen2_5-7B-Instruct.result.jsonl"
 OUT_DIR = SCRIPT_DIR / "output/qwen-7b-full/review"
@@ -277,8 +288,8 @@ for idx, rec in enumerate(records):
     rows.append({
         "question_id": qid,
         "task": task,
-        "expected_answer": expected,
-        "actual_answer": res["actual"],
+        "expected_answer": _safe_csv(expected),
+        "actual_answer": _safe_csv(res["actual"]),
         "score": score_val if score_val is not None else "",
     })
 
