@@ -20,7 +20,8 @@ class LLaDABackend(InferenceBackend):
         self.device = "cuda"
         # Generation defaults (overridden by config)
         self.gen_length = 512
-        self.steps = 128
+        self.tokens_per_step = 2
+        self.steps = 256  # gen_length // tokens_per_step
         self.block_length = 128
         self.temperature = 0.0
         self.cfg_scale = 0.0
@@ -47,13 +48,21 @@ class LLaDABackend(InferenceBackend):
 
         # Apply inference config
         self.gen_length = inference_cfg.get("max_output_tokens", 512)
-        self.steps = inference_cfg.get("steps", 128)
         self.block_length = inference_cfg.get("block_length", 128)
+        self.tokens_per_step = inference_cfg.get("tokens_per_step", 2)
         self.temperature = inference_cfg.get("temperature", 0.0)
         self.cfg_scale = inference_cfg.get("cfg_scale", 0.0)
         self.remasking = inference_cfg.get("remasking", "low_confidence")
 
-        print(f"  LLaDA ready. gen_length={self.gen_length}, steps={self.steps}, "
+        # Compute steps dynamically: total_steps = gen_length / tokens_per_step
+        assert self.block_length % self.tokens_per_step == 0, (
+            f"block_length ({self.block_length}) must be divisible by "
+            f"tokens_per_step ({self.tokens_per_step})"
+        )
+        self.steps = self.gen_length // self.tokens_per_step
+
+        print(f"  LLaDA ready. gen_length={self.gen_length}, "
+              f"steps={self.steps} (tokens_per_step={self.tokens_per_step}), "
               f"block_length={self.block_length}, remasking={self.remasking}")
 
     def generate(self, prompt: str) -> str:

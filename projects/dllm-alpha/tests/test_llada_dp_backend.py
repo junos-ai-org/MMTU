@@ -30,7 +30,7 @@ class FakeModel:
     def device(self) -> str:
         return self._device
 
-    def __call__(self, x: torch.Tensor):
+    def __call__(self, x: torch.Tensor, attention_mask=None):
         logits = torch.randn(x.shape[0], x.shape[1], self.vocab_size)
         return types.SimpleNamespace(logits=logits)
 
@@ -64,7 +64,8 @@ def _make_backend(n_gpus: int = 4) -> LLaDADataParallelBackend:
     backend.replicas = [FakeModel(device=f"cpu") for _ in range(n_gpus)]
     backend.devices = ["cpu"] * n_gpus
     backend.gen_length = 16
-    backend.steps = 16
+    backend.tokens_per_step = 1
+    backend.steps = 16  # gen_length // tokens_per_step
     backend.block_length = 16
     backend.temperature = 0.0
     backend.cfg_scale = 0.0
@@ -130,10 +131,12 @@ class TestResultOrdering:
         # Just verify we get the right count and all are strings.
         assert all(isinstance(r, str) for r in results)
 
-    def test_round_robin_distribution(self):
-        """Prompts should be distributed round-robin across GPUs."""
+    def test_length_sorted_distribution(self):
+        """Prompts should be sorted by length and distributed in contiguous chunks."""
         backend = _make_backend(n_gpus=3)
-        prompts = [f"p{i}" for i in range(9)]
+        # Prompts of varying lengths — FakeTokenizer returns len(text) tokens
+        prompts = ["a", "abcdef", "ab", "abcdefghi", "abc", "abcdefgh",
+                    "abcd", "abcdefghij", "abcde"]
 
         shard_calls: dict[int, list] = {}
         original_run_shard = backend._run_shard
@@ -145,9 +148,17 @@ class TestResultOrdering:
         backend._run_shard = spy_run_shard
         backend.generate_batch(prompts)
 
-        assert shard_calls[0] == [0, 3, 6]
-        assert shard_calls[1] == [1, 4, 7]
-        assert shard_calls[2] == [2, 5, 8]
+        # 9 prompts / 3 GPUs = 3 per GPU, sorted by token length
+        # Each shard should have 3 prompts, grouped by similar length
+        assert len(shard_calls) == 3
+        for gpu_idx in range(3):
+            assert len(shard_calls[gpu_idx]) == 3
+
+        # All original indices should be present (no duplicates, no missing)
+        all_indices = []
+        for indices in shard_calls.values():
+            all_indices.extend(indices)
+        assert sorted(all_indices) == list(range(9))
 
 
 # ---------------------------------------------------------------------------

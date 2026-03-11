@@ -65,15 +65,22 @@ class LLaDADataParallelBackend(LLaDABackend):
 
         # Apply inference config
         self.gen_length = inference_cfg.get("max_output_tokens", 512)
-        self.steps = inference_cfg.get("steps", 128)
         self.block_length = inference_cfg.get("block_length", 128)
+        self.tokens_per_step = inference_cfg.get("tokens_per_step", 2)
         self.temperature = inference_cfg.get("temperature", 0.0)
         self.cfg_scale = inference_cfg.get("cfg_scale", 0.0)
         self.remasking = inference_cfg.get("remasking", "low_confidence")
 
+        # Compute steps dynamically: total_steps = gen_length / tokens_per_step
+        assert self.block_length % self.tokens_per_step == 0, (
+            f"block_length ({self.block_length}) must be divisible by "
+            f"tokens_per_step ({self.tokens_per_step})"
+        )
+        self.steps = self.gen_length // self.tokens_per_step
+
         print(f"  LLaDA DP ready ({n_gpus} GPUs). gen_length={self.gen_length}, "
-              f"steps={self.steps}, block_length={self.block_length}, "
-              f"remasking={self.remasking}")
+              f"steps={self.steps} (tokens_per_step={self.tokens_per_step}), "
+              f"block_length={self.block_length}, remasking={self.remasking}")
 
     def _run_shard(
         self,
@@ -149,10 +156,14 @@ class LLaDADataParallelBackend(LLaDABackend):
             ids = self.tokenizer(text)["input_ids"]
             all_input_ids.append(ids)
 
-        # Split prompts across GPUs (round-robin to balance)
+        # Sort prompts by token length so each GPU shard has similar-length
+        # sequences, minimizing padding waste within each shard.
+        indexed_ids = sorted(enumerate(all_input_ids), key=lambda x: len(x[1]))
         gpu_shards: list[list[tuple[int, list[int]]]] = [[] for _ in range(n_gpus)]
-        for idx, ids in enumerate(all_input_ids):
-            gpu_shards[idx % n_gpus].append((idx, ids))
+        chunk_size = max(1, (len(indexed_ids) + n_gpus - 1) // n_gpus)
+        for i, (orig_idx, ids) in enumerate(indexed_ids):
+            gpu_idx = min(i // chunk_size, n_gpus - 1)
+            gpu_shards[gpu_idx].append((orig_idx, ids))
 
         # Run all GPU shards concurrently — each thread drives one GPU.
         # CUDA kernels release the GIL so threads achieve true parallelism.

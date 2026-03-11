@@ -15,7 +15,7 @@ inference:
   max_output_tokens: 512
   temperature: 0.0
   # LLaDA-specific
-  steps: 256              # 512 / 2
+  tokens_per_step: 2      # unmask 2 tokens per step → steps = gen_length / 2
   block_length: 64        # semi-autoregressive block size
   remasking: random
   cfg_scale: 0.0
