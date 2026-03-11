@@ -35,7 +35,8 @@ projects/dllm-alpha/
 │   ├── qwen-7b-smoke.yaml          # 25 flat random samples, vLLM
 │   ├── qwen-7b-full.yaml           # 15 per task, vLLM
 │   ├── deepseek-v3-smoke.yaml      # 25 flat random samples, DeepSeek API
-│   └── deepseek-v3-full.yaml       # 25 per task, DeepSeek API
+│   ├── deepseek-v3-full.yaml       # 25 per task, DeepSeek API
+│   └── qwen-7b-full-256.yaml      # 25 per task, vLLM, 256 max output tokens
 ├── docker/
 │   ├── Dockerfile
 │   └── entrypoint.sh
