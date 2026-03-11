@@ -12,8 +12,9 @@ import ast
 from collections import defaultdict
 from pathlib import Path
 
-RESULT_FILE = "projects/dllm-alpha/output/qwen-7b-full/qwen-7b-full.Qwen2_5-7B-Instruct.result.jsonl"
-OUT_DIR = Path("projects/dllm-alpha/output/qwen-7b-full/review")
+SCRIPT_DIR = Path(__file__).resolve().parent
+RESULT_FILE = SCRIPT_DIR / "output/qwen-7b-full/qwen-7b-full.Qwen2_5-7B-Instruct.result.jsonl"
+OUT_DIR = SCRIPT_DIR / "output/qwen-7b-full/review"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── Load data ──────────────────────────────────────────────────────────────
