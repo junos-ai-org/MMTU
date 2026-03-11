@@ -68,7 +68,7 @@ projects/dllm-alpha/
 
 ### Dataset splits
 - **Smoke**: 25 flat random samples across all 9 tasks (after token filtering)
-- **Full**: 15 samples per task
+- **Full**: 25 samples per task
 - Token filter: max_input_tokens = 3566 (4096 - 530)
 
 ## Commands

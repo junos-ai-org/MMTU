@@ -24,12 +24,9 @@ inference:
 dataset:
   name: MMTU-benchmark/MMTU
   split: train
-  samples_per_task: 15
+  samples_per_task: 25
   tasks:
     - Data-transform-reshape
-    - Transform-by-output-target-schema
-    - Transform-by-input-output-table
-    - Data-transform-pbe
     - Formula-prediction-context
     - semantic-transform
     - Arithmetic-Relationship
