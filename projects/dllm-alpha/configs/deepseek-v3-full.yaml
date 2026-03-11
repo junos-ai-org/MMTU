@@ -1,0 +1,32 @@
+experiment:
+  name: deepseek-v3-full
+  seed: 42
+  phase: full
+  tags: [full, autoregressive, deepseek, api]
+
+model:
+  backend: deepseek
+  model_path: deepseek-chat       # DeepSeek V3 model identifier
+  alias: DeepSeek-V3
+
+inference:
+  max_input_tokens: 3566  # 4096 - 530 (512 output + buffer)
+  max_output_tokens: 512
+  temperature: 0.0
+  batch_size: 8
+  # DeepSeek API settings
+  api:
+    base_url: https://api.deepseek.com
+    # api_key: set via DEEPSEEK_API_KEY env var
+
+dataset:
+  name: MMTU-benchmark/MMTU
+  split: train
+  samples_per_task: 25
+  tasks:
+    - Data-transform-reshape
+    - Formula-prediction-context
+    - semantic-transform
+    - Arithmetic-Relationship
+    - Functional-Dependency
+    - String-Relationship

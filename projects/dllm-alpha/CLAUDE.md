@@ -10,8 +10,9 @@ GPU inference, and traceable results.
 - [x] LLaDA backend (vendored generate.py from LLaDA repo @ 0474aa1)
 - [x] LLaDA data-parallel backend (multi-GPU replicas)
 - [x] Qwen backend (vLLM OpenAI-compatible API)
+- [x] DeepSeek V3 backend (DeepSeek API, OpenAI-compatible)
 - [x] Flat random sampling (for smoke tests)
-- [x] Experiment configs: llada-8b + qwen-7b (smoke + full)
+- [x] Experiment configs: llada-8b + qwen-7b + deepseek-v3 (smoke + full)
 - [ ] First smoke test run on GPU
 - [ ] Full experiment runs
 
@@ -26,12 +27,15 @@ projects/dllm-alpha/
 │   ├── llada_backend.py            # LLaDA single-GPU backend
 │   ├── llada_dp_backend.py         # LLaDA data-parallel backend (multi-GPU)
 │   ├── llada_generate.py           # Vendored from LLaDA repo
-│   └── qwen_backend.py             # Qwen via vLLM OpenAI API
+│   ├── qwen_backend.py             # Qwen via vLLM OpenAI API
+│   └── deepseek_backend.py         # DeepSeek V3 via DeepSeek API
 ├── configs/
 │   ├── llada-8b-smoke.yaml         # 25 flat random samples, llada-dp
 │   ├── llada-8b-full.yaml          # 15 per task, llada-dp
 │   ├── qwen-7b-smoke.yaml          # 25 flat random samples, vLLM
-│   └── qwen-7b-full.yaml           # 15 per task, vLLM
+│   ├── qwen-7b-full.yaml           # 15 per task, vLLM
+│   ├── deepseek-v3-smoke.yaml      # 25 flat random samples, DeepSeek API
+│   └── deepseek-v3-full.yaml       # 25 per task, DeepSeek API
 ├── docker/
 │   ├── Dockerfile
 │   └── entrypoint.sh
@@ -66,6 +70,11 @@ projects/dllm-alpha/
 - Tensor-parallel across 4 GPUs (vLLM `--tensor-parallel-size 4`)
 - Backend: `qwen`
 
+### Experiment 3: DeepSeek V3 (baseline)
+- Model: deepseek-chat (DeepSeek V3) via DeepSeek API
+- API key: set via `DEEPSEEK_API_KEY` env var
+- Backend: `deepseek`
+
 ### Dataset splits
 - **Smoke**: 25 flat random samples across all 9 tasks (after token filtering)
 - **Full**: 25 samples per task
@@ -81,6 +90,11 @@ python projects/dllm-alpha/run.py run configs/qwen-7b-smoke.yaml
 # Full runs
 python projects/dllm-alpha/run.py run configs/llada-8b-full.yaml
 python projects/dllm-alpha/run.py run configs/qwen-7b-full.yaml
+python projects/dllm-alpha/run.py run configs/deepseek-v3-full.yaml
+
+# DeepSeek V3 (set API key first)
+export DEEPSEEK_API_KEY=<your-key>
+python projects/dllm-alpha/run.py run configs/deepseek-v3-smoke.yaml
 
 # Evaluate standalone
 python projects/dllm-alpha/run.py evaluate <result_file>

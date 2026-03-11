@@ -4,11 +4,13 @@ from backends.base import InferenceBackend
 from backends.llada_backend import LLaDABackend
 from backends.llada_dp_backend import LLaDADataParallelBackend
 from backends.qwen_backend import QwenBackend
+from backends.deepseek_backend import DeepSeekBackend
 
 BACKENDS = {
     "llada": LLaDABackend,
     "llada-dp": LLaDADataParallelBackend,
     "qwen": QwenBackend,
+    "deepseek": DeepSeekBackend,
 }
 
 
