@@ -27,12 +27,14 @@ class FakeModel:
     def __init__(self, vocab_size: int = VOCAB_SIZE, device: str = "cpu"):
         self.vocab_size = vocab_size
         self._device = device
+        self.last_attention_mask = None  # Track last attention_mask passed
 
     @property
     def device(self) -> str:
         return self._device
 
-    def __call__(self, x: torch.Tensor):
+    def __call__(self, x: torch.Tensor, attention_mask=None):
+        self.last_attention_mask = attention_mask
         logits = torch.randn(x.shape[0], x.shape[1], self.vocab_size)
         return types.SimpleNamespace(logits=logits)
 
@@ -186,3 +188,74 @@ class TestSemiAutoregressive:
             temperature=0., cfg_scale=0., remasking="random", mask_id=MASK_ID,
         )
         assert out.shape == (2, 24)
+
+
+# ---------------------------------------------------------------------------
+# generate — attention mask
+# ---------------------------------------------------------------------------
+
+class TestAttentionMask:
+    def test_attention_mask_extended_to_gen_length(self):
+        """attention_mask should be extended with 1s for generation positions."""
+        prompt_len, gen_length = 8, 16
+        prompt = torch.randint(0, 1000, (2, prompt_len))
+        # Simulate left-padding: first 3 positions are padding (0)
+        attention_mask = torch.ones(2, prompt_len, dtype=torch.long)
+        attention_mask[:, :3] = 0
+
+        model = FakeModel()
+        out = generate(
+            model, prompt,
+            steps=16, gen_length=gen_length, block_length=gen_length,
+            temperature=0., cfg_scale=0., remasking="random", mask_id=MASK_ID,
+            attention_mask=attention_mask,
+        )
+        # Model should have received mask of length prompt_len + gen_length
+        last_mask = model.last_attention_mask
+        assert last_mask.shape == (2, prompt_len + gen_length)
+        # Padding positions should still be 0
+        assert (last_mask[:, :3] == 0).all()
+        # Generation positions should all be 1
+        assert (last_mask[:, prompt_len:] == 1).all()
+
+    def test_attention_mask_passed_to_model(self):
+        """When attention_mask is provided, model receives it."""
+        prompt = torch.randint(0, 1000, (1, 4))
+        attention_mask = torch.ones(1, 4, dtype=torch.long)
+        model = FakeModel()
+        generate(
+            model, prompt,
+            steps=4, gen_length=4, block_length=4,
+            temperature=0., cfg_scale=0., remasking="random", mask_id=MASK_ID,
+            attention_mask=attention_mask,
+        )
+        assert model.last_attention_mask is not None
+
+    def test_no_attention_mask_means_none(self):
+        """When no attention_mask given, model receives None (backward compat)."""
+        prompt = torch.randint(0, 1000, (1, 4))
+        model = FakeModel()
+        generate(
+            model, prompt,
+            steps=4, gen_length=4, block_length=4,
+            temperature=0., cfg_scale=0., remasking="random", mask_id=MASK_ID,
+        )
+        assert model.last_attention_mask is None
+
+    def test_cfg_doubles_attention_mask(self):
+        """With CFG, attention_mask should be doubled along batch dim."""
+        prompt = torch.randint(0, 1000, (2, 4))
+        attention_mask = torch.ones(2, 4, dtype=torch.long)
+        attention_mask[:, 0] = 0  # 1 pad position
+
+        model = FakeModel()
+        generate(
+            model, prompt,
+            steps=4, gen_length=4, block_length=4,
+            temperature=0., cfg_scale=1.0, remasking="random", mask_id=MASK_ID,
+            attention_mask=attention_mask,
+        )
+        # CFG concatenates [x, un_x] → mask should be [mask, mask] → batch=4
+        last_mask = model.last_attention_mask
+        assert last_mask.shape[0] == 4  # 2 * batch_size
+        assert last_mask.shape[1] == 4 + 4  # prompt_len + gen_length

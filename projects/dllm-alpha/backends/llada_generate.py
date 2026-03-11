@@ -52,7 +52,7 @@ def get_num_transfer_tokens(mask_index, steps):
 
 @ torch.no_grad()
 def generate(model, prompt, steps=128, gen_length=128, block_length=128, temperature=0.,
-             cfg_scale=0., remasking='low_confidence', mask_id=126336):
+             cfg_scale=0., remasking='low_confidence', mask_id=126336, attention_mask=None):
     '''
     Args:
         model: Mask predictor.
@@ -64,9 +64,17 @@ def generate(model, prompt, steps=128, gen_length=128, block_length=128, tempera
         cfg_scale: Unsupervised classifier-free guidance scale.
         remasking: Remasking strategy. 'low_confidence' or 'random'.
         mask_id: The toke id of [MASK] is 126336.
+        attention_mask: Optional (B, L) mask where 1 = attend, 0 = ignore (padding).
+                        Extended with 1s for gen_length positions.
     '''
     x = torch.full((prompt.shape[0], prompt.shape[1] + gen_length), mask_id, dtype=torch.long).to(model.device)
     x[:, :prompt.shape[1]] = prompt.clone()
+
+    # Extend attention_mask to cover generation positions (always attend to those)
+    if attention_mask is not None:
+        gen_mask = torch.ones(prompt.shape[0], gen_length, dtype=attention_mask.dtype,
+                              device=attention_mask.device)
+        attention_mask = torch.cat([attention_mask, gen_mask], dim=1)
 
     prompt_index = (x != mask_id)
 
@@ -85,11 +93,18 @@ def generate(model, prompt, steps=128, gen_length=128, block_length=128, tempera
                 un_x = x.clone()
                 un_x[prompt_index] = mask_id
                 x_ = torch.cat([x, un_x], dim=0)
-                logits = model(x_).logits
+                if attention_mask is not None:
+                    attn_ = torch.cat([attention_mask, attention_mask], dim=0)
+                    logits = model(x_, attention_mask=attn_).logits
+                else:
+                    logits = model(x_).logits
                 logits, un_logits = torch.chunk(logits, 2, dim=0)
                 logits = un_logits + (cfg_scale + 1) * (logits - un_logits)
             else:
-                logits = model(x).logits
+                if attention_mask is not None:
+                    logits = model(x, attention_mask=attention_mask).logits
+                else:
+                    logits = model(x).logits
 
             logits_with_noise = add_gumbel_noise(logits, temperature=temperature)
             x0 = torch.argmax(logits_with_noise, dim=-1) # b, l

@@ -104,6 +104,9 @@ class LLaDABackend(InferenceBackend):
 
         batch_tensor = torch.tensor(padded, device=self.device)
 
+        # Build attention mask: 0 for left-padding positions, 1 elsewhere
+        attention_mask = (batch_tensor != pad_id).long()
+
         output = generate(
             self.model,
             batch_tensor,
@@ -114,6 +117,7 @@ class LLaDABackend(InferenceBackend):
             cfg_scale=self.cfg_scale,
             remasking=self.remasking,
             mask_id=self.MASK_ID,
+            attention_mask=attention_mask,
         )
 
         # Decode each result — generated tokens start after the (padded) prompt
