@@ -9,6 +9,7 @@ import json
 import csv
 import re
 import ast
+import sys
 from collections import defaultdict
 from pathlib import Path
 
@@ -23,9 +24,16 @@ def _safe_csv(val):
             return f'`{s}`'
     return s
 
-SCRIPT_DIR = Path(__file__).resolve().parent
-RESULT_FILE = SCRIPT_DIR / "output/qwen-7b-full/qwen-7b-full.Qwen2_5-7B-Instruct.result.jsonl"
-OUT_DIR = SCRIPT_DIR / "output/qwen-7b-full/review"
+if len(sys.argv) < 2:
+    print("Usage: python generate_review_files.py <result_file.jsonl>")
+    sys.exit(1)
+
+RESULT_FILE = Path(sys.argv[1]).resolve()
+if not RESULT_FILE.exists():
+    print(f"Error: {RESULT_FILE} not found")
+    sys.exit(1)
+
+OUT_DIR = RESULT_FILE.parent / "review"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── Load data ──────────────────────────────────────────────────────────────
