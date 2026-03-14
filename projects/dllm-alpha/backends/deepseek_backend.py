@@ -1,4 +1,4 @@
-"""DeepSeek V3 inference backend — DeepSeek API (OpenAI-compatible)."""
+"""DeepSeek V3 inference backend — OpenRouter API (OpenAI-compatible)."""
 
 import concurrent.futures
 import os
@@ -10,7 +10,7 @@ from backends.base import InferenceBackend
 
 
 class DeepSeekBackend(InferenceBackend):
-    """Runs inference against the DeepSeek API using the OpenAI-compatible client."""
+    """Runs inference against OpenRouter using the OpenAI-compatible client."""
 
     def __init__(self):
         self.client = None
@@ -27,19 +27,19 @@ class DeepSeekBackend(InferenceBackend):
         self.max_tokens = inference_cfg.get("max_output_tokens", 512)
         self.temperature = inference_cfg.get("temperature", 0.0)
 
-        base_url = api_cfg.get("base_url", "https://api.deepseek.com")
-        api_key = api_cfg.get("api_key") or os.environ.get("DEEPSEEK_API_KEY")
+        base_url = api_cfg.get("base_url", "https://openrouter.ai/api/v1")
+        api_key = api_cfg.get("api_key") or os.environ.get("OPENROUTER_API_KEY")
         if not api_key:
             raise ValueError(
-                "DeepSeek API key required. Set inference.api.api_key in the "
-                "config or the DEEPSEEK_API_KEY environment variable."
+                "OpenRouter API key required. Set inference.api.api_key in the "
+                "config or the OPENROUTER_API_KEY environment variable."
             )
 
-        print(f"Connecting to DeepSeek API: {base_url}")
+        print(f"Connecting to OpenRouter API: {base_url}")
         print(f"  Model: {self.model_name}")
         self.client = OpenAI(base_url=base_url, api_key=api_key)
 
-        print(f"  DeepSeek ready. max_tokens={self.max_tokens}, "
+        print(f"  OpenRouter ready. max_tokens={self.max_tokens}, "
               f"temperature={self.temperature}")
 
     def generate(self, prompt: str) -> str:
