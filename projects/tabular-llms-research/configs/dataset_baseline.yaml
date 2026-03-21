@@ -1,26 +1,6 @@
-experiment:
-  name: qwen2.5-14b-smoke
-  seed: 42
-  tags: [smoke, decoder-only, 14b, vllm]
-
-model:
-  backend: qwen
-  model_path: Qwen/Qwen2.5-14B-Instruct
-  alias: Qwen2.5-14B-Instruct
-
-inference:
-  max_input_tokens: 3566  # 4096 - 530 (512 output + buffer)
-  max_output_tokens: 512
-  temperature: 0.0
-  batch_size: 8
-  vllm:
-    base_url: http://localhost:8000/v1
-    api_key: EMPTY
-
 dataset:
   name: MMTU-benchmark/MMTU
   split: train
-  total_samples: 25
   tasks:
     - Table-QA
     - Table-Fact-Verification
@@ -43,3 +23,14 @@ dataset:
     - Column-type-annotation
     - Columns-property-anotation
     - equi-join-detect
+
+  seed: 42
+  samples_per_task: 8
+  max_input_tokens: 3566
+
+permutation:
+  shuffle_columns: false
+  shuffle_rows: false
+
+output:
+  artifact_path: artifacts/datasets/baseline_150_samples.jsonl

@@ -223,7 +223,31 @@ def main():
     with open(output_path, "w") as f:
         f.write(report)
 
+    # Export a machine-readable JSON summary alongside the markdown report
+    summary_data = {
+        "experiment": exp_name,
+        "result_file": result_path.name,
+        "samples": len(df),
+        "overall_score": float(overall_mean) if len(evaluated) > 0 else 0.0,
+        "tasks": {}
+    }
+
+    if len(evaluated) > 0:
+        for task, grp in evaluated.groupby("task"):
+            summary_data["tasks"][task] = {
+                "metric": grp["metric_type"].iloc[0],
+                "samples": len(grp),
+                "score": float(grp["score"].mean()),
+                "perfect": int((grp["score"] >= 1.0 - 1e-9).sum()),
+                "zero": int((grp["score"] <= 1e-9).sum())
+            }
+
+    json_path = output_path.with_suffix(".json")
+    with open(json_path, "w") as f:
+        json.dump(summary_data, f, indent=2)
+
     print(f"\nAnalysis written to: {output_path}")
+    print(f"JSON summary written to: {json_path}")
     print(f"\n{'='*60}")
     print(report)
 

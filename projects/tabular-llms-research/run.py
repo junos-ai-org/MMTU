@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-tabular-llms-research: Experiment runner comparing encoder-decoder vs decoder-only
-architectures on MMTU table understanding tasks.
+tabular-llms-research: Experiment runner.
+
+Executes inference on a pre-built static dataset artifact.
+Organizes output by <experiment_name>/<model_alias>/.
 
 Usage:
-    python projects/tabular-llms-research/run.py run configs/qwen2.5-14b-smoke.yaml
-    python projects/tabular-llms-research/run.py run configs/t5gemma-9b-smoke.yaml
-    python projects/tabular-llms-research/run.py evaluate <result_file> [--n_jobs N]
+    python projects/tabular-llms-research/run.py run configs/run_qwen_full.yaml
+    python projects/tabular-llms-research/run.py evaluate <result_file>
     python projects/tabular-llms-research/run.py list
 """
 
 import argparse
 import json
-import random
 import shutil
 import subprocess
 import sys
@@ -21,18 +21,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
-from datasets import load_dataset
 
-
-def _get_mmtu_root() -> Path:
-    """Return the MMTU repo root (three levels up from this file)."""
-    return Path(__file__).resolve().parent.parent.parent
-
-
-def _get_project_dir() -> Path:
-    """Return this project's directory."""
-    return Path(__file__).resolve().parent
-
+try:
+    import wandb
+    WANDB_AVAILABLE = True
+except ImportError:
+    WANDB_AVAILABLE = False
 
 def _make_run_key(tag: str | None = None) -> str:
     """Generate a timestamped run key, optionally with a tag suffix."""
@@ -41,10 +35,8 @@ def _make_run_key(tag: str | None = None) -> str:
         key = f"{key}_{tag}"
     return key
 
-
-def _find_latest_run(experiment_name: str) -> Path | None:
-    """Return the most recent run directory for an experiment, or None."""
-    exp_root = _get_project_dir() / "output" / experiment_name
+def _find_latest_run(exp_name: str, model_alias: str) -> Path | None:
+    exp_root = _get_project_dir() / "output" / exp_name / model_alias
     if not exp_root.exists():
         return None
     latest_link = exp_root / "latest"
@@ -56,36 +48,19 @@ def _find_latest_run(experiment_name: str) -> Path | None:
     )
     return run_dirs[-1] if run_dirs else None
 
-
 def _update_latest_symlink(run_dir: Path) -> None:
-    """Point the 'latest' symlink at run_dir."""
     latest = run_dir.parent / "latest"
     if latest.is_symlink() or latest.exists():
         latest.unlink()
     latest.symlink_to(run_dir.name)
 
+def _get_mmtu_root() -> Path:
+    return Path(__file__).resolve().parent.parent.parent
 
-def _get_output_dir(experiment_name: str, run_key: str) -> Path:
-    """Return and create the run output directory."""
-    out = _get_project_dir() / "output" / experiment_name / run_key
-    out.mkdir(parents=True, exist_ok=True)
-    return out
-
-
-def _git_sha() -> str:
-    """Return the current short git SHA, or 'unknown'."""
-    try:
-        result = subprocess.run(
-            ["git", "rev-parse", "--short", "HEAD"],
-            capture_output=True, text=True, cwd=str(_get_mmtu_root()),
-        )
-        return result.stdout.strip() or "unknown"
-    except Exception:
-        return "unknown"
-
+def _get_project_dir() -> Path:
+    return Path(__file__).resolve().parent
 
 def load_config(config_path: str) -> dict:
-    """Load and return a YAML experiment config."""
     path = Path(config_path)
     if not path.is_absolute():
         path = _get_project_dir() / path
@@ -95,185 +70,89 @@ def load_config(config_path: str) -> dict:
     with open(path) as f:
         return yaml.safe_load(f)
 
+def _git_sha() -> str:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True, text=True, cwd=str(_get_mmtu_root()),
+        )
+        return result.stdout.strip() or "unknown"
+    except Exception:
+        return "unknown"
 
-def load_mmtu_dataset(hf_dataset: str, hf_split: str) -> list[dict]:
-    """Load the full MMTU dataset from HuggingFace."""
-    print(f"Loading MMTU dataset from {hf_dataset} (split={hf_split})...")
-    ds = load_dataset(hf_dataset, split=hf_split)
-    records = [{"prompt": row["prompt"], "metadata": row["metadata"]} for row in ds]
-    print(f"  Loaded {len(records)} total records.")
-    return records
-
-
-def _filter_markdown_only(records: list[dict]) -> list[dict]:
-    """Keep only records whose config version indicates markdown format."""
-    filtered = []
-    for rec in records:
-        meta = json.loads(rec["metadata"])
-        version = meta.get("version", "")
-        # MMTU configs follow the pattern: task_vX.Y_markdown[_suffix]
-        if "markdown" in version.lower():
-            filtered.append(rec)
-    return filtered
-
-
-def sample_records(
-    records: list[dict],
-    tasks: list[str],
-    n_per_task: int | None,
-    seed: int,
-    max_input_tokens: int,
-    n_total: int | None = None,
-) -> list[dict]:
-    """Sample records, excluding prompts that exceed max_input_tokens.
-
-    If n_total is set, take a flat random sample of that size across all tasks.
-    Otherwise, sample n_per_task records per task.
-    """
-    mmtu_root = _get_mmtu_root()
-    if str(mmtu_root) not in sys.path:
-        sys.path.insert(0, str(mmtu_root))
-    from utils.count_token import count_tokens_mp
-
-    task_set = set(tasks)
-
-    # Collect task-relevant records (markdown only)
-    task_records: list[tuple[str, dict]] = []
-    for rec in records:
-        meta = json.loads(rec["metadata"])
-        task = meta["task"]
-        if task in task_set:
-            task_records.append((task, rec))
-
-    # Filter to markdown configs only
-    markdown_records: list[tuple[str, dict]] = []
-    for task, rec in task_records:
-        meta = json.loads(rec["metadata"])
-        version = meta.get("version", "")
-        if "markdown" in version.lower():
-            markdown_records.append((task, rec))
-    task_records = markdown_records
-    print(f"  Filtered to markdown configs: {len(task_records)} records")
-
-    # Batch token count
-    prompts = [rec["prompt"] for _, rec in task_records]
-    token_counts = count_tokens_mp(prompts)
-
-    # Filter by token limit and bucket by task
-    by_task: dict[str, list[dict]] = {t: [] for t in tasks}
-    skipped_counts: dict[str, int] = {t: 0 for t in tasks}
-
-    for (task, rec), tc in zip(task_records, token_counts):
-        if tc > max_input_tokens:
-            skipped_counts[task] += 1
-        else:
-            by_task[task].append(rec)
-
-    # Print token filter stats
-    for task in sorted(tasks):
-        pool = by_task[task]
-        total = len(pool) + skipped_counts[task]
-        if len(pool) == 0:
-            print(f"  {task}: 0/{total} fit <={max_input_tokens} tokens — SKIPPED")
-        else:
-            print(f"  {task}: {len(pool)}/{total} qualifying"
-                  f" ({skipped_counts[task]} exceeded token limit)")
-
-    rng = random.Random(seed)
-    sampled = []
-
-    if n_total is not None:
-        # Flat random sample across all tasks
-        all_qualifying = []
-        for task in sorted(tasks):
-            all_qualifying.extend(by_task[task])
-        n = min(n_total, len(all_qualifying))
-        sampled = rng.sample(all_qualifying, n)
-        print(f"  Flat sample: {n}/{len(all_qualifying)} total qualifying records")
-    else:
-        # Per-task sampling
-        for task in sorted(tasks):
-            pool = by_task[task]
-            if len(pool) == 0:
-                continue
-            n = min(n_per_task, len(pool))
-            chosen = rng.sample(pool, n)
-            sampled.extend(chosen)
-            print(f"  {task}: sampled {n}/{len(pool)}")
-
-    print(f"  Total sampled: {len(sampled)}")
-    return sampled
-
-
-def run_experiment(
-    config: dict,
-    config_path: str,
-    resume: bool | str = False,
-    tag: str | None = None,
-) -> None:
-    """Execute a full experiment: load model, sample data, run inference, evaluate."""
-    exp = config["experiment"]
+def run_experiment(config: dict, config_path: str, resume: bool | str = False, tag: str | None = None):
+    exp_cfg = config["experiment"]
     model_cfg = config["model"]
-    inference_cfg = config["inference"]
-    dataset_cfg = config["dataset"]
+    inf_cfg = config["inference"]
+    data_cfg = config["data"]
 
-    experiment_name = exp["name"]
-    seed = exp["seed"]
+    exp_name = exp_cfg["name"]
     model_alias = model_cfg["alias"]
-
-    # Permutation settings
-    permutation_cfg = config.get("permutation", {})
-    shuffle_columns = permutation_cfg.get("shuffle_columns", False)
-    shuffle_rows = permutation_cfg.get("shuffle_rows", False)
-    permutation_seed = permutation_cfg.get("seed", seed)
+    artifact_path = data_cfg["artifact_path"]
 
     # Resolve run key
     if resume:
-        if isinstance(resume, str):
+        if isinstance(resume, str) and resume != "":
             run_key = resume
-            candidate = _get_project_dir() / "output" / experiment_name / run_key
+            candidate = _get_project_dir() / "output" / exp_name / model_alias / run_key
             if not candidate.exists():
-                print(f"Error: run '{run_key}' not found in output/{experiment_name}/")
+                print(f"Error: run '{run_key}' not found.")
                 sys.exit(1)
         else:
-            latest = _find_latest_run(experiment_name)
+            latest = _find_latest_run(exp_name, model_alias)
             if latest is None:
-                print(f"Error: no previous runs found for '{experiment_name}'")
+                print(f"Error: no previous runs found for '{exp_name}/{model_alias}'")
                 sys.exit(1)
             run_key = latest.name
         print(f"Resuming run: {run_key}")
     else:
         run_key = _make_run_key(tag)
 
-    output_dir = _get_output_dir(experiment_name, run_key)
-    _update_latest_symlink(output_dir)
+    # Output dir: output/<experiment_name>/<model_alias>/<run_key>/
+    out_dir = _get_project_dir() / "output" / exp_name / model_alias / run_key
+    out_dir.mkdir(parents=True, exist_ok=True)
+    _update_latest_symlink(out_dir)
 
     print("=" * 60)
-    print(f"EXPERIMENT: {experiment_name}")
-    print(f"Run key:  {run_key}")
-    print(f"Backend: {model_cfg['backend']} | Model: {model_cfg['model_path']}")
-    if shuffle_columns or shuffle_rows:
-        print(f"Permutation: cols={shuffle_columns}, rows={shuffle_rows}, seed={permutation_seed}")
-    print(f"Output: {output_dir}")
+    print(f"EXPERIMENT: {exp_name} | {exp_cfg.get('purpose', 'No purpose specified')}")
+    print(f"Model: {model_alias} ({model_cfg['backend']})")
+    print(f"Data Artifact: {artifact_path}")
+    print(f"Output: {out_dir.relative_to(_get_project_dir())}")
     print("=" * 60)
 
-    # Freeze config into output dir for traceability
-    frozen_config = output_dir / "config.yaml"
-    config_src = config_path if Path(config_path).is_absolute() else str(_get_project_dir() / config_path)
-    shutil.copy2(config_src, str(frozen_config))
+    # Freeze config
+    shutil.copy2(
+        config_path if Path(config_path).is_absolute() else str(_get_project_dir() / config_path),
+        str(out_dir / "config.yaml")
+    )
 
-    # Record provenance
-    provenance = {
-        "experiment_name": experiment_name,
+    prov = {
+        "experiment_name": exp_name,
+        "model_alias": model_alias,
         "git_sha": _git_sha(),
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "config_path": config_path,
+        "config_path": str(config_path),
+        "data_artifact": artifact_path,
     }
-    with open(output_dir / "provenance.json", "w") as f:
-        json.dump(provenance, f, indent=2)
+    with open(out_dir / "provenance.json", "w") as f:
+        json.dump(prov, f, indent=2)
 
-    # 1. Load backend
-    print("\n[1/5] Loading model...")
+    # 1. Load Data
+    artifact_file = Path(artifact_path)
+    if not artifact_file.is_absolute():
+        artifact_file = _get_project_dir() / artifact_file
+
+    if not artifact_file.exists():
+        print(f"FATAL: Dataset artifact not found at {artifact_file}")
+        sys.exit(1)
+
+    sampled = []
+    with open(artifact_file) as f:
+        for line in f:
+            sampled.append(json.loads(line))
+
+    # 2. Load Backend
+    print(f"\n[1/5] Loading model {model_cfg['model_path']}...")
     project_dir = _get_project_dir()
     if str(project_dir) not in sys.path:
         sys.path.insert(0, str(project_dir))
@@ -287,65 +166,29 @@ def run_experiment(
         print("FATAL: Backend health check failed.")
         sys.exit(1)
 
-    # 2. Load and sample dataset
-    print("\n[2/5] Loading and sampling dataset...")
-    records = load_mmtu_dataset(dataset_cfg["name"], dataset_cfg["split"])
-    sampled = sample_records(
-        records,
-        dataset_cfg["tasks"],
-        dataset_cfg.get("samples_per_task"),
-        seed,
-        inference_cfg["max_input_tokens"],
-        n_total=dataset_cfg.get("total_samples"),
-    )
+    # 3. Inference
+    batch_size = inf_cfg.get("batch_size", 1)
+    print(f"\n[2/5] Running inference on {len(sampled)} samples (batch_size={batch_size})...")
 
-    # 3. Apply table permutation if configured
-    if shuffle_columns or shuffle_rows:
-        print(f"\n[3/5] Applying table permutation...")
-        from table_permuter import permute_tables_in_prompt
-        for rec in sampled:
-            rec["prompt"] = permute_tables_in_prompt(
-                rec["prompt"],
-                shuffle_columns=shuffle_columns,
-                shuffle_rows=shuffle_rows,
-                seed=permutation_seed,
-            )
-        print(f"  Permuted {len(sampled)} prompts.")
-    else:
-        print("\n[3/5] No permutation configured, skipping.")
+    result_file = out_dir / f"{exp_name}.{model_alias}.result.jsonl"
 
-    # 4. Run inference
-    batch_size = inference_cfg.get("batch_size", 1)
-    print(f"\n[4/5] Running inference on {len(sampled)} samples (batch_size={batch_size})...")
-    input_file = output_dir / "input.jsonl"
-    result_file = output_dir / f"{experiment_name}.{model_alias}.result.jsonl"
-
-    with open(input_file, "w") as f:
-        for rec in sampled:
-            f.write(json.dumps(rec) + "\n")
-
-    # Resumption support
     existing_results = set()
-    if result_file.exists():
+    if resume and result_file.exists():
         with open(result_file) as f:
             for line in f:
-                row = json.loads(line)
-                existing_results.add(row.get("prompt", "")[:200])
+                existing_results.add(json.loads(line).get("prompt", "")[:200])
         print(f"  Resuming: {len(existing_results)} existing results found.")
 
     pending = [rec for rec in sampled if rec["prompt"][:200] not in existing_results]
     completed = len(existing_results)
-    total = len(sampled)
 
-    with open(result_file, "a") as out_f:
-        for batch_start in range(0, len(pending), batch_size):
-            batch = pending[batch_start:batch_start + batch_size]
+    with open(result_file, "a" if resume else "w") as out_f:
+        for i in range(0, len(pending), batch_size):
+            batch = pending[i:i + batch_size]
             batch_prompts = [rec["prompt"] for rec in batch]
 
-            print(f"  [{completed + 1}-{completed + len(batch)}/{total}] "
-                  f"Generating batch of {len(batch)}...", end=" ", flush=True)
+            print(f"  [{completed + 1}-{completed + len(batch)}/{len(sampled)}] Generating batch...", end=" ", flush=True)
             t0 = time.time()
-
             try:
                 if len(batch) == 1:
                     responses = [backend.generate(batch_prompts[0])]
@@ -359,153 +202,162 @@ def run_experiment(
                 responses = [f"[ERROR] {e}"] * len(batch)
 
             for rec, response in zip(batch, responses):
-                result_row = {
+                res_row = {
                     "prompt": rec["prompt"],
                     "metadata": rec["metadata"],
                     "response": response,
                     "model": model_alias,
-                    "experiment": experiment_name,
+                    "experiment": exp_name,
                 }
-                out_f.write(json.dumps(result_row) + "\n")
+                out_f.write(json.dumps(res_row) + "\n")
             out_f.flush()
             completed += len(batch)
 
-    # 5. Evaluate
+    # 4. Evaluate & Analyze
     import os
     os.environ.setdefault("MMTU_HOME", str(_get_mmtu_root()))
+    print(f"\n[3/5] Running MMTU evaluation on {result_file.name}...")
 
-    print("\n[5/5] Evaluating results...")
-    rc = run_evaluation(result_file, _get_mmtu_root())
+    rc = subprocess.run([
+        sys.executable, str(_get_mmtu_root() / "evaluate.py"),
+        str(result_file)
+    ], cwd=str(_get_mmtu_root())).returncode
+
     if rc != 0:
-        print(f"Evaluation exited with code {rc}")
-    else:
-        print(f"\nExperiment '{experiment_name}' complete!")
-        print(f"Results: {output_dir}")
+        print(f"evaluate.py exited with code {rc}")
 
+    print("\n[4/5] Running local analysis...")
+    subprocess.run([
+        sys.executable, str(_get_project_dir() / "analyze.py"),
+        str(result_file)
+    ])
 
-def run_evaluation(result_file: Path, mmtu_root: Path, n_jobs: int = -1) -> int:
-    """Run evaluate.py via subprocess."""
-    cmd = [
-        sys.executable, str(mmtu_root / "evaluate.py"),
-        str(result_file),
-        "--n_jobs", str(n_jobs),
-    ]
-    print(f"  Running: {' '.join(cmd)}")
-    proc = subprocess.run(cmd, cwd=str(mmtu_root))
-    return proc.returncode
+    # 5. Parse analysis and log automatically
+    experiments_md = _get_project_dir() / "experiments.md"
+    score_line = ""
+    analysis_file = result_file.with_suffix(".analysis.md")
 
+    task_scores = {}
+    overall_score = 0.0
+    if analysis_file.exists():
+        in_table = False
+        with open(analysis_file) as f:
+            for line in f:
+                if line.startswith("**Overall mean score:**"):
+                    score_line = line.split("**:")[-1].strip()
+                    overall_score = float(score_line)
+
+                if "## Score Summary by Task" in line:
+                    in_table = True
+                    continue
+                if "## Per-Task Token" in line:
+                    in_table = False
+
+                if in_table and line.startswith("| ") and not line.startswith("| Task") and "---" not in line:
+                    parts = [p.strip() for p in line.split("|")]
+                    if len(parts) > 4:
+                        try:
+                            task_scores[parts[1]] = float(parts[4])
+                        except:
+                            pass
+
+    with open(experiments_md, "a") as f:
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        f.write(f"| {date_str} | `{exp_name}` | `{model_alias}` | {exp_cfg.get('purpose', 'N/A')} | {score_line} |\n")
+
+    # 6. Weights & Biases (W&B) Logging
+    use_wandb = exp_cfg.get("wandb", False)
+    if use_wandb:
+        if not WANDB_AVAILABLE:
+            print("WARNING: W&B is enabled in config, but 'wandb' package is not installed. Skipping W&B logging.")
+        else:
+            print(f"\n[5/5] Logging run to Weights & Biases...")
+            wandb.init(
+                project="mmtu-tabular-research",
+                name=f"{exp_name}-{model_alias}",
+                group=exp_name,
+                tags=exp_cfg.get("tags", []),
+                config=config,
+            )
+
+            # Log top-level score and task scores
+            wandb.log({"overall_score": overall_score})
+            for t_name, t_score in task_scores.items():
+                wandb.log({f"task/{t_name}": t_score})
+
+            # Log raw generation responses to W&B Table for visual debugging
+            print(f"  Uploading predictions table to W&B...")
+            table = wandb.Table(columns=["Task", "Test Case", "Prompt", "Generation", "Score", "Metric"])
+
+            # Since analyze.py just ran, it dumped a parsed JSONL with "score" inline (or we can re-evaluate)
+            # To keep it simple, we upload the raw results
+            try:
+                import pandas as pd
+                df = pd.read_json(result_file, lines=True)
+                for _, row in df.iterrows():
+                    meta = json.loads(row["metadata"])
+                    table.add_data(
+                        meta.get("task", ""),
+                        meta.get("test_case", ""),
+                        row.get("prompt", "")[:2000] + "..." if len(row.get("prompt", "")) > 2000 else row.get("prompt", ""),
+                        row.get("response", "")[:1000],
+                        -1, # Actual parsed score is in analysis table
+                        "raw"
+                    )
+                wandb.log({"predictions": table})
+            except Exception as e:
+                print(f"  Warning: failed to upload W&B Table: {e}")
+
+            wandb.finish()
+
+    print(f"\nExperiment complete. Output logged to experiments.md!")
 
 def cmd_run(args):
-    """Run an experiment from a YAML config."""
-    config = load_config(args.config)
+    cfg = load_config(args.config)
     resume = args.resume if args.resume is not None else False
     if resume == "":
         resume = True
-    run_experiment(config, args.config, resume=resume, tag=args.tag)
-
+    run_experiment(cfg, args.config, resume=resume, tag=args.tag)
 
 def cmd_evaluate(args):
-    """Standalone evaluation of a result file."""
-    result_file = Path(args.result_file).resolve()
-    if not result_file.exists():
-        print(f"Error: {result_file} does not exist")
-        sys.exit(1)
-    rc = run_evaluation(result_file, _get_mmtu_root(), n_jobs=args.n_jobs)
-    sys.exit(rc)
-
+    res_file = Path(args.result_file).resolve()
+    subprocess.run([sys.executable, str(_get_mmtu_root() / "evaluate.py"), str(res_file)], cwd=str(_get_mmtu_root()))
 
 def cmd_list(args):
-    """List all experiments and their runs."""
-    output_root = _get_project_dir() / "output"
-    if not output_root.exists():
+    out_dir = _get_project_dir() / "output"
+    if not out_dir.exists():
         print("No experiments found.")
         return
-
-    experiments = sorted(
-        [d for d in output_root.iterdir() if d.is_dir()],
-        key=lambda d: d.name,
-    )
-    if not experiments:
-        print("No experiments found.")
-        return
-
-    for exp_dir in experiments:
-        run_dirs = sorted(
-            [d for d in exp_dir.iterdir() if d.is_dir() and not d.is_symlink()],
-            key=lambda d: d.name,
-        )
-
-        flat_results = list(exp_dir.glob("*.result.jsonl"))
-        if flat_results and not run_dirs:
-            run_dirs = [exp_dir]
-
-        latest_link = exp_dir / "latest"
-        latest_target = (
-            latest_link.resolve().name
-            if latest_link.is_symlink()
-            else None
-        )
-
-        print(f"\n{exp_dir.name}  ({len(run_dirs)} run{'s' if len(run_dirs) != 1 else ''})")
-        print(f"  {'Run key':<30} {'Results':<12} {'Timestamp':<22}")
-        print(f"  {'-' * 64}")
-
-        for run_dir in run_dirs:
-            prov_file = run_dir / "provenance.json"
-            if prov_file.exists():
-                with open(prov_file) as f:
-                    prov = json.load(f)
-                timestamp = prov.get("timestamp", "unknown")[:19]
-            else:
-                timestamp = "unknown"
-
-            result_files = list(run_dir.glob("*.result.jsonl"))
-            if result_files:
-                with open(result_files[0]) as f:
-                    n_results = sum(1 for _ in f)
-                status = f"{n_results} results"
-            else:
-                status = "no results"
-
-            label = run_dir.name
-            if run_dir == exp_dir:
-                label = "(flat)"
-            elif label == latest_target:
-                label = f"{label} ← latest"
-
-            print(f"  {label:<30} {status:<12} {timestamp:<22}")
-
+    exps = [d for d in out_dir.iterdir() if d.is_dir()]
+    for exp in sorted(exps):
+        print(f"\nExperiment: {exp.name}")
+        models = [m for m in exp.iterdir() if m.is_dir()]
+        for m in sorted(models):
+            print(f"  └── Model: {m.name}")
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="tabular-llms-research: encoder-decoder vs decoder-only on MMTU"
-    )
-    subparsers = parser.add_subparsers(dest="command", required=True)
+    parser = argparse.ArgumentParser(description="tabular-llms-research runner")
+    subs = parser.add_subparsers(dest="command", required=True)
 
-    # run
-    sub_run = subparsers.add_parser("run", help="Run an experiment from a YAML config")
-    sub_run.add_argument("config", type=str, help="Path to experiment YAML config")
-    sub_run.add_argument(
+    p_run = subs.add_parser("run", help="Run model on deterministic artifact")
+    p_run.add_argument("config", type=str)
+    p_run.add_argument(
         "--resume", nargs="?", const="", default=None,
         help="Resume a previous run (latest if no key given, or specify a run key)",
     )
-    sub_run.add_argument(
+    p_run.add_argument(
         "--tag", type=str, default=None,
-        help="Tag appended to run key (e.g. --tag retry → 20260321-143022_retry)",
+        help="Tag appended to run key (e.g. --tag retry -> 20260321-143022_retry)",
     )
 
-    # evaluate
-    sub_eval = subparsers.add_parser("evaluate", help="Evaluate a result file")
-    sub_eval.add_argument("result_file", type=str)
-    sub_eval.add_argument("--n_jobs", type=int, default=-1)
+    p_eval = subs.add_parser("evaluate", help="Evaluate a result file")
+    p_eval.add_argument("result_file", type=str)
 
-    # list
-    subparsers.add_parser("list", help="List all experiments")
+    subs.add_parser("list", help="List experiments")
 
     args = parser.parse_args()
-    commands = {"run": cmd_run, "evaluate": cmd_evaluate, "list": cmd_list}
-    commands[args.command](args)
-
+    cmds = {"run": cmd_run, "evaluate": cmd_evaluate, "list": cmd_list}
+    cmds[args.command](args)
 
 if __name__ == "__main__":
     main()
