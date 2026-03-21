@@ -31,56 +31,13 @@ def get_mmtu_root() -> Path:
 
 
 def load_evaluators():
-    """Import MMTU evaluators for the 21 non-execution tasks."""
+    """Import MMTU evaluators via the main evaluation module."""
     mmtu_root = get_mmtu_root()
     if str(mmtu_root) not in sys.path:
         sys.path.insert(0, str(mmtu_root))
 
-    from evaluators.tableqa_evaluator import TQAEvaluator
-    from evaluators.tfv_evaluator import TFVEvaluator
-    from evaluators.ed_evaluator import EDEvaluator
-    from evaluators.em_evaluator import EMEvaluator
-    from evaluators.tniah_evaluator import TNIAHEvaluator
-    from evaluators.tablelocate_evaluator import TableLocateEvaluator
-    from evaluators.sm_evaluator import SMEvaluator
-    from evaluators.data_transform_reshape_evaluator import DataTransformReshapeEvaluator
-    from evaluators.data_imputation_evaluator import DataImputationEvaluator
-    from evaluators.list_to_table_evaluator import ListToTableEvaluator
-    from evaluators.formula_context_evaluator import FormulaPredictContextEvaluator
-    from evaluators.semantic_transform_evaluator import SemanticTransformEvaluator
-    from evaluators.semantic_join_evaluator import SemanticJoinEvaluator
-    from evaluators.header_value_match_evaluator import HeaderValueMatchEvaluator
-    from evaluators.ar_evaluator import AREvaluator
-    from evaluators.fd_evaluator import FDEvaluator
-    from evaluators.sr_evaluator import SREvaluator
-    from evaluators.cea_evaluator import CEAEvaluator
-    from evaluators.cta_evaluator import CTAEvaluator
-    from evaluators.cpa_evaluator import CPAEvaluator
-    from evaluators.ejd_evaluator import EquiJoinDetectEvaluator
-
-    return {
-        "Table-QA": TQAEvaluator(),
-        "Table-Fact-Verification": TFVEvaluator(),
-        "Error-Detect": EDEvaluator(),
-        "Entity-Matching": EMEvaluator(),
-        "Table-needle-in-a-haystack": TNIAHEvaluator(),
-        "Table-Locate-by-Row-Col": TableLocateEvaluator(),
-        "Schema-Matching": SMEvaluator(),
-        "Data-transform-reshape": DataTransformReshapeEvaluator(),
-        "Data-Imputation": DataImputationEvaluator(),
-        "List-to-table": ListToTableEvaluator(),
-        "Formula-prediction-context": FormulaPredictContextEvaluator(),
-        "semantic-transform": SemanticTransformEvaluator(),
-        "semantic-join": SemanticJoinEvaluator(),
-        "header-value-matching": HeaderValueMatchEvaluator(),
-        "Arithmetic-Relationship": AREvaluator(),
-        "Functional-Dependency": FDEvaluator(),
-        "String-Relationship": SREvaluator(),
-        "Cell-entity-annotation": CEAEvaluator(),
-        "Column-type-annotation": CTAEvaluator(),
-        "Columns-property-anotation": CPAEvaluator(),
-        "equi-join-detect": EquiJoinDetectEvaluator(),
-    }
+    from evaluate import evaluator_dict
+    return evaluator_dict
 
 
 F1_TASKS = {

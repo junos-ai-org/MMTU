@@ -56,33 +56,28 @@ class T5GemmaBackend(InferenceBackend):
               f" ({attn_impl} + torch.compile)")
 
     def generate(self, prompt: str) -> str:
-        inputs = self.processor(
-            text=prompt,
-            return_tensors="pt",
-        )
-        # Move inputs to model device
-        inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
-
-        gen_kwargs = {
-            "max_new_tokens": self.max_new_tokens,
-        }
-        if self.temperature > 0:
-            gen_kwargs["do_sample"] = True
-            gen_kwargs["temperature"] = self.temperature
-        else:
-            gen_kwargs["do_sample"] = False
-
-        with torch.no_grad():
-            output_ids = self.model.generate(**inputs, **gen_kwargs)
-
-        # Decode only the generated tokens (skip input for encoder-decoder)
-        response = self.processor.decode(output_ids[0], skip_special_tokens=True)
-        return response.strip()
+        return self.generate_batch([prompt])[0]
 
     def generate_batch(self, prompts: list[str]) -> list[str]:
         # T5Gemma supports batched generation via padding
+
+        # Apply instruction tuning chat template
+        formatted_prompts = []
+        for p in prompts:
+            # Check if processor has apply_chat_template (it usually does for instruction tuned models)
+            if hasattr(self.processor, "apply_chat_template"):
+                messages = [{"role": "user", "content": p}]
+                formatted_p = self.processor.apply_chat_template(
+                    messages,
+                    tokenize=False,
+                    add_generation_prompt=True
+                )
+                formatted_prompts.append(formatted_p)
+            else:
+                formatted_prompts.append(p)
+
         inputs = self.processor(
-            text=prompts,
+            text=formatted_prompts,
             return_tensors="pt",
             padding=True,
             truncation=True,
