@@ -143,7 +143,7 @@ apply to any model and are worth enabling by default:
 
 ## Infrastructure
 - **Docker Hub**: Images hosted under `achithanar/` on Docker Hub
-  - `achithanar/mmtu-tabular-llms:latest` — GPU image for T5Gemma/Qwen2.5 inference
+  - `achithanar/mmtu-tabular-llms:tfix` — GPU image for T5Gemma/Qwen2.5 inference
 - **Compute**: Running evaluations on RunPod (GPU cloud, Spot instances)
 
 ## Key Decisions
