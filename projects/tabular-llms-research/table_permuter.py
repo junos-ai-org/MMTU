@@ -123,9 +123,9 @@ def _permute_table_block(
     sep_cells = _parse_row(block_lines[sep_idx])
     alignments = [_parse_alignment(c) for c in sep_cells]
 
-    data_rows = []
+    data_rows_with_indices = []
     for i in range(sep_idx + 1, len(block_lines)):
-        data_rows.append(_parse_row(block_lines[i]))
+        data_rows_with_indices.append((_parse_row(block_lines[i]), i - (sep_idx + 1)))
 
     n_cols = len(header_cells)
 
@@ -139,15 +139,17 @@ def _permute_table_block(
     # Apply column permutation
     header_cells = [header_cells[i] for i in col_order]
     alignments = [alignments[i] for i in col_order]
-    data_rows = [[row[i] for i in col_order] if len(row) == n_cols else row
-                 for row in data_rows]
+    data_rows_with_indices = [
+        ([row[i] for i in col_order] if len(row) == n_cols else row, orig_idx)
+        for row, orig_idx in data_rows_with_indices
+    ]
 
     # Apply row permutation
     if shuffle_rows:
-        rng.shuffle(data_rows)
+        rng.shuffle(data_rows_with_indices)
 
     # Compute column widths for alignment
-    all_rows = [header_cells] + data_rows
+    all_rows = [header_cells] + [row for row, _ in data_rows_with_indices]
     widths = []
     for col_idx in range(n_cols):
         max_w = max(len(row[col_idx]) for row in all_rows if col_idx < len(row))
@@ -160,12 +162,12 @@ def _permute_table_block(
         result.append(block_lines[i])
     result.append(_format_row(header_cells, widths))
     result.append(_format_separator(widths, alignments))
-    for row in data_rows:
+    for row, orig_idx in data_rows_with_indices:
         if len(row) == n_cols:
             result.append(_format_row(row, widths))
         else:
-            # Malformed row, keep as-is
-            result.append(block_lines[sep_idx + 1 + data_rows.index(row)])
+            # Malformed row, keep as-is using the tracked original index
+            result.append(block_lines[sep_idx + 1 + orig_idx])
 
     return result
 
