@@ -6,9 +6,9 @@ Compare encoder-decoder (T5Gemma 9B-9B, ~18B total / ~9B active) vs decoder-only
 whether encoder-decoder's bidirectional attention provides structural advantages for
 table comprehension, and measure robustness to column/row permutations.
 
-**Design choice**: Qwen2.5-14B is given a parameter advantage (14B always-active vs
-T5Gemma's ~9B active during decoding) to test whether encoder-decoder architecture
-can compete despite fewer active parameters.
+**Design choice**: Models have different parameter profiles — T5Gemma has more total
+parameters (~18B vs 14B) but fewer active during decoding (~9B vs 14B). This tests
+whether encoder-decoder architecture can leverage its total capacity efficiently.
 
 ## Status
 - [x] Project structure and backend interface
@@ -147,8 +147,8 @@ apply to any model and are worth enabling by default:
 - **Compute**: Running evaluations on RunPod (GPU cloud, Spot instances)
 
 ## Key Decisions
-- **Model sizing**: Qwen2.5-14B-Instruct given parameter advantage over T5Gemma 9B-9B
-  (~14B vs ~9B active) to test whether enc-dec architecture compensates.
+- **Model sizing**: Different parameter profiles — T5Gemma ~18B total / ~9B active
+  during decoding vs Qwen2.5 14B always active. Tests architectural efficiency.
 - **Table permutation in prompts**: Parse markdown tables from pre-built HF prompts,
   permute columns/rows, re-serialize. Avoids rebuilding from raw data via build_data.py.
 - **T5Gemma backend**: Direct HuggingFace transformers (AutoModelForSeq2SeqLM), not
