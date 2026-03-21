@@ -28,6 +28,32 @@ try:
 except ImportError:
     WANDB_AVAILABLE = False
 
+def _make_run_key(tag: str | None = None) -> str:
+    """Generate a timestamped run key, optionally with a tag suffix."""
+    key = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    if tag:
+        key = f"{key}_{tag}"
+    return key
+
+def _find_latest_run(exp_name: str, model_alias: str) -> Path | None:
+    exp_root = _get_project_dir() / "output" / exp_name / model_alias
+    if not exp_root.exists():
+        return None
+    latest_link = exp_root / "latest"
+    if latest_link.is_symlink() and latest_link.resolve().is_dir():
+        return latest_link.resolve()
+    run_dirs = sorted(
+        [d for d in exp_root.iterdir() if d.is_dir() and not d.is_symlink()],
+        key=lambda d: d.name,
+    )
+    return run_dirs[-1] if run_dirs else None
+
+def _update_latest_symlink(run_dir: Path) -> None:
+    latest = run_dir.parent / "latest"
+    if latest.is_symlink() or latest.exists():
+        latest.unlink()
+    latest.symlink_to(run_dir.name)
+
 def _get_mmtu_root() -> Path:
     return Path(__file__).resolve().parent.parent.parent
 
@@ -54,7 +80,7 @@ def _git_sha() -> str:
     except Exception:
         return "unknown"
 
-def run_experiment(config: dict, config_path: str, resume: bool = False):
+def run_experiment(config: dict, config_path: str, resume: bool | str = False, tag: str | None = None):
     exp_cfg = config["experiment"]
     model_cfg = config["model"]
     inf_cfg = config["inference"]
@@ -64,9 +90,28 @@ def run_experiment(config: dict, config_path: str, resume: bool = False):
     model_alias = model_cfg["alias"]
     artifact_path = data_cfg["artifact_path"]
 
-    # Output dir: output/<experiment_name>/<model_alias>/
-    out_dir = _get_project_dir() / "output" / exp_name / model_alias
+    # Resolve run key
+    if resume:
+        if isinstance(resume, str) and resume != "":
+            run_key = resume
+            candidate = _get_project_dir() / "output" / exp_name / model_alias / run_key
+            if not candidate.exists():
+                print(f"Error: run '{run_key}' not found.")
+                sys.exit(1)
+        else:
+            latest = _find_latest_run(exp_name, model_alias)
+            if latest is None:
+                print(f"Error: no previous runs found for '{exp_name}/{model_alias}'")
+                sys.exit(1)
+            run_key = latest.name
+        print(f"Resuming run: {run_key}")
+    else:
+        run_key = _make_run_key(tag)
+
+    # Output dir: output/<experiment_name>/<model_alias>/<run_key>/
+    out_dir = _get_project_dir() / "output" / exp_name / model_alias / run_key
     out_dir.mkdir(parents=True, exist_ok=True)
+    _update_latest_symlink(out_dir)
 
     print("=" * 60)
     print(f"EXPERIMENT: {exp_name} | {exp_cfg.get('purpose', 'No purpose specified')}")
@@ -107,7 +152,7 @@ def run_experiment(config: dict, config_path: str, resume: bool = False):
             sampled.append(json.loads(line))
 
     # 2. Load Backend
-    print(f"\n[1/4] Loading model {model_cfg['model_path']}...")
+    print(f"\n[1/5] Loading model {model_cfg['model_path']}...")
     project_dir = _get_project_dir()
     if str(project_dir) not in sys.path:
         sys.path.insert(0, str(project_dir))
@@ -123,7 +168,7 @@ def run_experiment(config: dict, config_path: str, resume: bool = False):
 
     # 3. Inference
     batch_size = inf_cfg.get("batch_size", 1)
-    print(f"\n[2/4] Running inference on {len(sampled)} samples (batch_size={batch_size})...")
+    print(f"\n[2/5] Running inference on {len(sampled)} samples (batch_size={batch_size})...")
 
     result_file = out_dir / f"{exp_name}.{model_alias}.result.jsonl"
 
@@ -171,7 +216,7 @@ def run_experiment(config: dict, config_path: str, resume: bool = False):
     # 4. Evaluate & Analyze
     import os
     os.environ.setdefault("MMTU_HOME", str(_get_mmtu_root()))
-    print(f"\n[3/4] Running MMTU evaluation on {result_file.name}...")
+    print(f"\n[3/5] Running MMTU evaluation on {result_file.name}...")
 
     rc = subprocess.run([
         sys.executable, str(_get_mmtu_root() / "evaluate.py"),
@@ -181,7 +226,7 @@ def run_experiment(config: dict, config_path: str, resume: bool = False):
     if rc != 0:
         print(f"evaluate.py exited with code {rc}")
 
-    print("\n[4/4] Running local analysis...")
+    print("\n[4/5] Running local analysis...")
     subprocess.run([
         sys.executable, str(_get_project_dir() / "analyze.py"),
         str(result_file)
@@ -226,7 +271,7 @@ def run_experiment(config: dict, config_path: str, resume: bool = False):
         if not WANDB_AVAILABLE:
             print("WARNING: W&B is enabled in config, but 'wandb' package is not installed. Skipping W&B logging.")
         else:
-            print(f"\n[5/4] Logging run to Weights & Biases...")
+            print(f"\n[5/5] Logging run to Weights & Biases...")
             wandb.init(
                 project="mmtu-tabular-research",
                 name=f"{exp_name}-{model_alias}",
@@ -269,8 +314,10 @@ def run_experiment(config: dict, config_path: str, resume: bool = False):
 
 def cmd_run(args):
     cfg = load_config(args.config)
-    resume = getattr(args, "resume", False)
-    run_experiment(cfg, args.config, resume=resume)
+    resume = args.resume if args.resume is not None else False
+    if resume == "":
+        resume = True
+    run_experiment(cfg, args.config, resume=resume, tag=args.tag)
 
 def cmd_evaluate(args):
     res_file = Path(args.result_file).resolve()
@@ -294,7 +341,14 @@ def main():
 
     p_run = subs.add_parser("run", help="Run model on deterministic artifact")
     p_run.add_argument("config", type=str)
-    p_run.add_argument("--resume", action="store_true", help="Resume inference")
+    p_run.add_argument(
+        "--resume", nargs="?", const="", default=None,
+        help="Resume a previous run (latest if no key given, or specify a run key)",
+    )
+    p_run.add_argument(
+        "--tag", type=str, default=None,
+        help="Tag appended to run key (e.g. --tag retry -> 20260321-143022_retry)",
+    )
 
     p_eval = subs.add_parser("evaluate", help="Evaluate a result file")
     p_eval.add_argument("result_file", type=str)

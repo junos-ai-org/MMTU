@@ -14,29 +14,13 @@ import sys
 from pathlib import Path
 import pandas as pd
 
-def parse_md(file_path: Path):
-    tasks = {}
-    overall = None
+def parse_json(file_path: Path):
     with open(file_path) as f:
-        in_table = False
-        for line in f:
-            if "**Overall mean score:**" in line:
-                overall = float(line.split("**:")[-1].strip())
-            if "## Score Summary by Task" in line:
-                in_table = True
-                continue
-            if "## Per-Task" in line:
-                in_table = False
+        data = json.load(f)
 
-            if in_table and line.startswith("| ") and not line.startswith("| Task"):
-                parts = [p.strip() for p in line.split("|")]
-                if len(parts) > 4 and parts[1] != "---":
-                    task = parts[1]
-                    try:
-                        score = float(parts[4])
-                        tasks[task] = score
-                    except:
-                        pass
+    tasks = {k: v["score"] for k, v in data.get("tasks", {}).items()}
+    overall = data.get("overall_score", 0.0)
+
     return tasks, overall
 
 def main():
@@ -52,15 +36,15 @@ def main():
         print("Both directories must exist.")
         sys.exit(1)
 
-    md1 = list(d1.glob("*.analysis.md"))
-    md2 = list(d2.glob("*.analysis.md"))
+    json1 = list(d1.glob("*.analysis.json"))
+    json2 = list(d2.glob("*.analysis.json"))
 
-    if not md1 or not md2:
-        print("Both directories must contain an analysis.md file.")
+    if not json1 or not json2:
+        print("Both directories must contain an analysis.json file (run analyze.py again).")
         sys.exit(1)
 
-    t1, o1 = parse_md(md1[0])
-    t2, o2 = parse_md(md2[0])
+    t1, o1 = parse_json(json1[0])
+    t2, o2 = parse_json(json2[0])
 
     print("=" * 60)
     print(f"{'Task':<30} | {d1.name[:12]:<12} | {d2.name[:12]:<12} | Delta (d1 - d2)")
