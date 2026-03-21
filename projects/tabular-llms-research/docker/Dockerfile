@@ -13,7 +13,8 @@ RUN pip install --no-cache-dir \
 
 # T5Gemma backend dependencies (encoder-decoder via HuggingFace)
 RUN pip install --no-cache-dir \
-    transformers accelerate sentencepiece protobuf
+    transformers accelerate sentencepiece protobuf \
+    flash-attn --no-build-isolation
 
 # Qwen3 backend dependencies (vLLM for serving)
 RUN pip install --no-cache-dir vllm
