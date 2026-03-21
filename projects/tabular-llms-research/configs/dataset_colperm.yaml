@@ -1,31 +1,6 @@
-experiment:
-  name: qwen3-4b-full-colperm
-  seed: 42
-  tags: [full, colperm, decoder-only, 4b, vllm]
-
-model:
-  backend: qwen3
-  model_path: Qwen/Qwen3-4B
-  alias: Qwen3-4B
-
-inference:
-  max_input_tokens: 3566
-  max_output_tokens: 512
-  temperature: 0.0
-  batch_size: 16
-  vllm:
-    base_url: http://localhost:8000/v1
-    api_key: EMPTY
-
-permutation:
-  shuffle_columns: true
-  shuffle_rows: false
-  seed: 42
-
 dataset:
   name: MMTU-benchmark/MMTU
   split: train
-  samples_per_task: 8
   tasks:
     - Table-QA
     - Table-Fact-Verification
@@ -48,3 +23,14 @@ dataset:
     - Column-type-annotation
     - Columns-property-anotation
     - equi-join-detect
+
+  seed: 42
+  samples_per_task: 8
+  max_input_tokens: 3566
+
+permutation:
+  shuffle_columns: true
+  shuffle_rows: false
+
+output:
+  artifact_path: artifacts/datasets/colperm_150_samples.jsonl

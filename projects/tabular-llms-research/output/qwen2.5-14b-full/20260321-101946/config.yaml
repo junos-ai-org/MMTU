@@ -1,24 +1,26 @@
 experiment:
-  name: t5gemma-2b-full
+  name: qwen2.5-14b-full
   seed: 42
-  tags: [full, baseline, encoder-decoder, 2b-2b, huggingface]
+  tags: [full, baseline, decoder-only, 14b, vllm]
 
 model:
-  backend: t5gemma
-  model_path: google/t5gemma-2b-2b-ul2-it
-  alias: t5gemma-2b-2b-ul2-it
-  dtype: bfloat16
+  backend: qwen
+  model_path: Qwen/Qwen2.5-14B-Instruct
+  alias: Qwen2.5-14B-Instruct
 
 inference:
   max_input_tokens: 3566
   max_output_tokens: 512
   temperature: 0.0
   batch_size: 16
+  vllm:
+    base_url: http://localhost:8000/v1
+    api_key: EMPTY
 
 dataset:
   name: MMTU-benchmark/MMTU
   split: train
-  samples_per_task: 8
+  samples_per_task: 8  # ~8 x 21 tasks ≈ 168, closest to 150 balanced
   tasks:
     - Table-QA
     - Table-Fact-Verification
