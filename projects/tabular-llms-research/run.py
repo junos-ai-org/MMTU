@@ -280,10 +280,13 @@ def run_experiment(config: dict, config_path: str, resume: bool | str = False, t
                 config=config,
             )
 
-            # Log top-level score and task scores
-            wandb.log({"overall_score": overall_score})
+            # Build a unified dictionary to log all metrics in a single step
+            metrics_to_log = {"overall_score": overall_score}
             for t_name, t_score in task_scores.items():
-                wandb.log({f"task/{t_name}": t_score})
+                metrics_to_log[f"task/{t_name}"] = t_score
+
+            # Log all scores together so W&B displays them cleanly in one summary row
+            wandb.log(metrics_to_log)
 
             # Log raw generation responses to W&B Table for visual debugging
             print(f"  Uploading predictions table to W&B...")
