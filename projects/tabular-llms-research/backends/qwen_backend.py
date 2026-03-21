@@ -1,4 +1,4 @@
-"""Qwen3 inference backend — vLLM via OpenAI-compatible API."""
+"""Qwen2.5 inference backend — vLLM via OpenAI-compatible API."""
 
 import concurrent.futures
 
@@ -7,7 +7,7 @@ from openai import OpenAI
 from backends.base import InferenceBackend
 
 
-class Qwen3Backend(InferenceBackend):
+class QwenBackend(InferenceBackend):
     """Runs inference against a vLLM server using the OpenAI-compatible API."""
 
     def __init__(self):
@@ -32,7 +32,7 @@ class Qwen3Backend(InferenceBackend):
         print(f"  Model: {self.model_name}")
         self.client = OpenAI(base_url=base_url, api_key=api_key)
 
-        print(f"  Qwen3 ready (vLLM). max_tokens={self.max_tokens}, "
+        print(f"  Qwen ready (vLLM). max_tokens={self.max_tokens}, "
               f"temperature={self.temperature}")
 
     def generate(self, prompt: str) -> str:

@@ -1,21 +1,19 @@
 experiment:
-  name: qwen3-4b-smoke
+  name: t5gemma-9b-smoke
   seed: 42
-  tags: [smoke, decoder-only, 4b, vllm]
+  tags: [smoke, encoder-decoder, 9b-9b, huggingface]
 
 model:
-  backend: qwen3
-  model_path: Qwen/Qwen3-4B
-  alias: Qwen3-4B
+  backend: t5gemma
+  model_path: google/t5gemma-9b-9b-ul2-it
+  alias: t5gemma-9b-9b-ul2-it
+  dtype: bfloat16
 
 inference:
   max_input_tokens: 3566  # 4096 - 530 (512 output + buffer)
   max_output_tokens: 512
   temperature: 0.0
   batch_size: 8
-  vllm:
-    base_url: http://localhost:8000/v1
-    api_key: EMPTY
 
 dataset:
   name: MMTU-benchmark/MMTU

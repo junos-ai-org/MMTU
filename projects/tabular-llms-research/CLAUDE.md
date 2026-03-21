@@ -1,18 +1,22 @@
 # tabular-llms-research
 
 ## Goal
-Compare encoder-decoder (T5Gemma 2B-2B) vs decoder-only (Qwen3 4B) architectures
-on MMTU table understanding tasks. Investigate whether encoder-decoder's bidirectional
-attention provides structural advantages for table comprehension, and measure
-robustness to column/row permutations.
+Compare encoder-decoder (T5Gemma 9B-9B, ~18B total / ~9B active) vs decoder-only
+(Qwen2.5-14B-Instruct) architectures on MMTU table understanding tasks. Investigate
+whether encoder-decoder's bidirectional attention provides structural advantages for
+table comprehension, and measure robustness to column/row permutations.
+
+**Design choice**: Qwen2.5-14B is given a parameter advantage (14B always-active vs
+T5Gemma's ~9B active during decoding) to test whether encoder-decoder architecture
+can compete despite fewer active parameters.
 
 ## Status
-- [ ] Project structure and backend interface
-- [ ] T5Gemma seq2seq backend (HuggingFace transformers)
-- [ ] Qwen3 backend (vLLM OpenAI-compatible API)
-- [ ] Table permutation utility (parse + permute markdown tables in prompts)
+- [x] Project structure and backend interface
+- [x] T5Gemma seq2seq backend (HuggingFace transformers)
+- [x] Qwen2.5 backend (vLLM OpenAI-compatible API)
+- [x] Table permutation utility (parse + permute markdown tables in prompts)
 - [ ] Smoke test runs (both models)
-- [ ] Full baseline runs (150 samples, balanced across 21 tasks)
+- [ ] Full baseline runs (168 samples, balanced across 21 tasks)
 - [ ] Column permutation experiment
 - [ ] Analysis and comparison
 
@@ -25,15 +29,15 @@ projects/tabular-llms-research/
 ├── table_permuter.py           # Parse/permute markdown tables in prompts
 ├── backends/
 │   ├── base.py                 # InferenceBackend ABC (symlink to dllm-alpha)
-│   ├── qwen3_backend.py        # Qwen3 4B via vLLM OpenAI API
-│   └── t5gemma_backend.py      # T5Gemma 2B-2B via HuggingFace transformers
+│   ├── qwen_backend.py         # Qwen2.5-14B-Instruct via vLLM OpenAI API
+│   └── t5gemma_backend.py      # T5Gemma 9B-9B UL2 IT via HuggingFace transformers
 ├── configs/
-│   ├── qwen3-4b-smoke.yaml
-│   ├── qwen3-4b-full.yaml
-│   ├── qwen3-4b-full-colperm.yaml
-│   ├── t5gemma-2b-smoke.yaml
-│   ├── t5gemma-2b-full.yaml
-│   └── t5gemma-2b-full-colperm.yaml
+│   ├── qwen2.5-14b-smoke.yaml
+│   ├── qwen2.5-14b-full.yaml
+│   ├── qwen2.5-14b-full-colperm.yaml
+│   ├── t5gemma-9b-smoke.yaml
+│   ├── t5gemma-9b-full.yaml
+│   └── t5gemma-9b-full-colperm.yaml
 ├── docker/
 │   ├── Dockerfile
 │   └── entrypoint.sh
@@ -41,6 +45,13 @@ projects/tabular-llms-research/
 │   └── test_table_permuter.py
 └── output/
 ```
+
+## Models
+
+| Model | Type | Total Params | Active Params (decoding) | HF ID |
+|---|---|---|---|---|
+| T5Gemma 9B-9B UL2 IT | encoder-decoder | ~18B | ~9B | `google/t5gemma-9b-9b-ul2-it` |
+| Qwen2.5-14B-Instruct | decoder-only | 14B | 14B | `Qwen/Qwen2.5-14B-Instruct` |
 
 ## Tasks (21 non-execution MMTU tasks)
 
@@ -74,8 +85,8 @@ Transform-by-output-target-schema, Transform-by-input-output-table.
 ## Experiments
 
 ### Experiment 1: Baseline (no permutation)
-- Qwen3 4B vs T5Gemma 2B-2B
-- 150 samples, balanced across 21 tasks (~7 per task)
+- Qwen2.5-14B-Instruct vs T5Gemma 9B-9B UL2 IT
+- 168 samples, balanced across 21 tasks (~8 per task)
 - Markdown table format
 - Temperature: 0.0
 
@@ -86,23 +97,23 @@ Transform-by-output-target-schema, Transform-by-input-output-table.
 
 ## Dataset
 - **Smoke**: 25 flat random samples for quick validation
-- **Full**: 150 samples, balanced per task (~7 per task)
+- **Full**: 168 samples, balanced per task (~8 per task)
 - Token filter: max_input_tokens = 3566 (4096 - 530)
 
 ## Commands
 
 ```bash
 # Smoke tests
-python projects/tabular-llms-research/run.py run configs/qwen3-4b-smoke.yaml
-python projects/tabular-llms-research/run.py run configs/t5gemma-2b-smoke.yaml
+python projects/tabular-llms-research/run.py run configs/qwen2.5-14b-smoke.yaml
+python projects/tabular-llms-research/run.py run configs/t5gemma-9b-smoke.yaml
 
 # Full baseline
-python projects/tabular-llms-research/run.py run configs/qwen3-4b-full.yaml
-python projects/tabular-llms-research/run.py run configs/t5gemma-2b-full.yaml
+python projects/tabular-llms-research/run.py run configs/qwen2.5-14b-full.yaml
+python projects/tabular-llms-research/run.py run configs/t5gemma-9b-full.yaml
 
 # Column permutation
-python projects/tabular-llms-research/run.py run configs/qwen3-4b-full-colperm.yaml
-python projects/tabular-llms-research/run.py run configs/t5gemma-2b-full-colperm.yaml
+python projects/tabular-llms-research/run.py run configs/qwen2.5-14b-full-colperm.yaml
+python projects/tabular-llms-research/run.py run configs/t5gemma-9b-full-colperm.yaml
 
 # Evaluate standalone
 python projects/tabular-llms-research/run.py evaluate <result_file>
@@ -132,14 +143,16 @@ apply to any model and are worth enabling by default:
 
 ## Infrastructure
 - **Docker Hub**: Images hosted under `achithanar/` on Docker Hub
-  - `achithanar/mmtu-tabular-llms:latest` — GPU image for T5Gemma/Qwen3 inference
+  - `achithanar/mmtu-tabular-llms:latest` — GPU image for T5Gemma/Qwen2.5 inference
 - **Compute**: Running evaluations on RunPod (GPU cloud, Spot instances)
 
 ## Key Decisions
+- **Model sizing**: Qwen2.5-14B-Instruct given parameter advantage over T5Gemma 9B-9B
+  (~14B vs ~9B active) to test whether enc-dec architecture compensates.
 - **Table permutation in prompts**: Parse markdown tables from pre-built HF prompts,
   permute columns/rows, re-serialize. Avoids rebuilding from raw data via build_data.py.
 - **T5Gemma backend**: Direct HuggingFace transformers (AutoModelForSeq2SeqLM), not
   vLLM (no seq2seq support in vLLM).
-- **Qwen3 backend**: vLLM OpenAI-compatible API (same pattern as dllm-alpha).
-- **150 samples balanced**: ~7 samples per task ensures each task contributes to the
+- **Qwen2.5 backend**: vLLM OpenAI-compatible API (same pattern as dllm-alpha).
+- **168 samples balanced**: ~8 samples per task ensures each task contributes to the
   overall score without any single task dominating.

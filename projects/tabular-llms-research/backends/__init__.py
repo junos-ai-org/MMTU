@@ -1,11 +1,11 @@
 """Inference backend registry."""
 
 from backends.base import InferenceBackend
-from backends.qwen3_backend import Qwen3Backend
+from backends.qwen_backend import QwenBackend
 from backends.t5gemma_backend import T5GemmaBackend
 
 BACKENDS = {
-    "qwen3": Qwen3Backend,
+    "qwen": QwenBackend,
     "t5gemma": T5GemmaBackend,
 }
 

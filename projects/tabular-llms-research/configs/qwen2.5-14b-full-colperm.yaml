@@ -1,12 +1,12 @@
 experiment:
-  name: qwen3-4b-full-colperm
+  name: qwen2.5-14b-full-colperm
   seed: 42
-  tags: [full, colperm, decoder-only, 4b, vllm]
+  tags: [full, colperm, decoder-only, 14b, vllm]
 
 model:
-  backend: qwen3
-  model_path: Qwen/Qwen3-4B
-  alias: Qwen3-4B
+  backend: qwen
+  model_path: Qwen/Qwen2.5-14B-Instruct
+  alias: Qwen2.5-14B-Instruct
 
 inference:
   max_input_tokens: 3566

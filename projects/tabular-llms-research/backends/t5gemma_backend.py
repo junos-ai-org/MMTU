@@ -1,4 +1,8 @@
-"""T5Gemma inference backend — HuggingFace transformers (encoder-decoder)."""
+"""T5Gemma inference backend — HuggingFace transformers (encoder-decoder).
+
+Currently configured for T5Gemma 9B-9B UL2 IT (~18B total params, ~9B active
+during decoding). Uses Flash Attention 2 + torch.compile for optimization.
+"""
 
 import torch
 from transformers import AutoProcessor, AutoModelForSeq2SeqLM
@@ -7,7 +11,7 @@ from backends.base import InferenceBackend
 
 
 class T5GemmaBackend(InferenceBackend):
-    """Runs inference using T5Gemma via HuggingFace transformers."""
+    """Runs inference using T5Gemma (encoder-decoder) via HuggingFace transformers."""
 
     def __init__(self):
         self.model = None

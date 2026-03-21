@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir \
     transformers accelerate sentencepiece protobuf \
     flash-attn --no-build-isolation
 
-# Qwen3 backend dependencies (vLLM for serving)
+# Qwen2.5 backend dependencies (vLLM for serving)
 RUN pip install --no-cache-dir vllm
 
 # MMTU code — install outside /workspace (RunPod mounts a volume there)

@@ -1,12 +1,12 @@
 experiment:
-  name: t5gemma-2b-full
+  name: t5gemma-9b-full
   seed: 42
-  tags: [full, baseline, encoder-decoder, 2b-2b, huggingface]
+  tags: [full, baseline, encoder-decoder, 9b-9b, huggingface]
 
 model:
   backend: t5gemma
-  model_path: google/t5gemma-2b-2b-ul2-it
-  alias: t5gemma-2b-2b-ul2-it
+  model_path: google/t5gemma-9b-9b-ul2-it
+  alias: t5gemma-9b-9b-ul2-it
   dtype: bfloat16
 
 inference:

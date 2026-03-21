@@ -4,8 +4,8 @@ tabular-llms-research: Experiment runner comparing encoder-decoder vs decoder-on
 architectures on MMTU table understanding tasks.
 
 Usage:
-    python projects/tabular-llms-research/run.py run configs/qwen3-4b-smoke.yaml
-    python projects/tabular-llms-research/run.py run configs/t5gemma-2b-smoke.yaml
+    python projects/tabular-llms-research/run.py run configs/qwen2.5-14b-smoke.yaml
+    python projects/tabular-llms-research/run.py run configs/t5gemma-9b-smoke.yaml
     python projects/tabular-llms-research/run.py evaluate <result_file> [--n_jobs N]
     python projects/tabular-llms-research/run.py list
 """
