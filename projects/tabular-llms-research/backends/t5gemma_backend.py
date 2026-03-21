@@ -35,10 +35,16 @@ class T5GemmaBackend(InferenceBackend):
             model_path,
             torch_dtype=dtype,
             device_map="auto",
+            attn_implementation="flash_attention_2",
         )
         self.model.eval()
 
-        print(f"  T5Gemma ready on {self.device}. max_new_tokens={self.max_new_tokens}")
+        # torch.compile for ~1.5-2x speedup on repeated forward passes
+        print("  Applying torch.compile...")
+        self.model = torch.compile(self.model)
+
+        print(f"  T5Gemma ready on {self.device}. max_new_tokens={self.max_new_tokens}"
+              f" (flash_attention_2 + torch.compile)")
 
     def generate(self, prompt: str) -> str:
         inputs = self.processor(

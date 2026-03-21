@@ -111,6 +111,25 @@ python projects/tabular-llms-research/run.py evaluate <result_file>
 python projects/tabular-llms-research/run.py list
 ```
 
+## HuggingFace Inference Optimization (reusable across projects)
+
+When running HuggingFace models directly (not via vLLM), these optimizations
+apply to any model and are worth enabling by default:
+
+| Optimization | Speedup | Code | Notes |
+|---|---|---|---|
+| Flash Attention 2 | ~1.5x | `attn_implementation="flash_attention_2"` in `from_pretrained()` | Requires `flash-attn` package, CUDA GPUs (Ampere+). Fused attention kernels, lower memory. |
+| `torch.compile` | ~1.5-2x | `model = torch.compile(model)` after loading | First call is slow (compilation), subsequent calls faster. Works with any model. |
+| BetterTransformer | ~1.3x | `model.to_bettertransformer()` | PyTorch native. Largely superseded by Flash Attention 2. |
+| Mixed precision | varies | `torch_dtype=torch.bfloat16` in `from_pretrained()` | Always use bf16 on Ampere+ GPUs. |
+
+**Not available for encoder-decoder models:**
+- **vLLM**: Decoder-only architectures only (no seq2seq support).
+- **TensorRT-LLM**: Supports enc-dec but complex setup, overkill for small experiments.
+- **SGLang**: Decoder-only only.
+
+**Applied in this project**: T5Gemma backend uses Flash Attention 2 + `torch.compile`.
+
 ## Key Decisions
 - **Table permutation in prompts**: Parse markdown tables from pre-built HF prompts,
   permute columns/rows, re-serialize. Avoids rebuilding from raw data via build_data.py.
