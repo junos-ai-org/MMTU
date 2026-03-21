@@ -33,7 +33,9 @@ projects/tabular-llms-research/
 │   ├── qwen3-4b-full-colperm.yaml
 │   ├── t5gemma-2b-smoke.yaml
 │   ├── t5gemma-2b-full.yaml
-│   └── t5gemma-2b-full-colperm.yaml
+│   ├── t5gemma-2b-full-colperm.yaml
+│   ├── qwen3-4b-all-tasks-smoke.yaml
+│   └── qwen3-4b-all-tasks-full.yaml
 ├── docker/
 │   ├── Dockerfile
 │   └── entrypoint.sh
@@ -103,6 +105,10 @@ python projects/tabular-llms-research/run.py run configs/t5gemma-2b-full.yaml
 # Column permutation
 python projects/tabular-llms-research/run.py run configs/qwen3-4b-full-colperm.yaml
 python projects/tabular-llms-research/run.py run configs/t5gemma-2b-full-colperm.yaml
+
+# All 25 tasks (including execution tasks)
+python projects/tabular-llms-research/run.py run configs/qwen3-4b-all-tasks-smoke.yaml
+python projects/tabular-llms-research/run.py run configs/qwen3-4b-all-tasks-full.yaml
 
 # Evaluate standalone
 python projects/tabular-llms-research/run.py evaluate <result_file>

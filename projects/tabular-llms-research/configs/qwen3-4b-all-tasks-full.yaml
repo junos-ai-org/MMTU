@@ -1,12 +1,12 @@
 experiment:
-  name: qwen7b-full
+  name: qwen3-4b-all-tasks-full
   seed: 42
-  tags: [full, baseline, decoder-only, 7b, vllm, all-tasks]
+  tags: [full, baseline, decoder-only, 4b, vllm, all-tasks]
 
 model:
   backend: qwen3
-  model_path: Qwen/Qwen2.5-7B-Instruct
-  alias: Qwen2_5-7B-Instruct
+  model_path: Qwen/Qwen3-4B
+  alias: Qwen3-4B
 
 inference:
   max_input_tokens: 3566
