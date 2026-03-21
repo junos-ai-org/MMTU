@@ -11,13 +11,13 @@ echo "  Done."
 export HF_HOME="/workspace/.cache/huggingface"
 
 # Download T5Gemma weights
-T5GEMMA_MODEL="${T5GEMMA_MODEL_PATH:-google/t5gemma-2b-2b}"
+T5GEMMA_MODEL="${T5GEMMA_MODEL_PATH:-google/t5gemma-2b-2b-ul2-it}"
 echo "Checking model weights for ${T5GEMMA_MODEL}..."
 huggingface-cli download "$T5GEMMA_MODEL"
 echo "  T5Gemma model weights ready."
 
-# Optionally download Qwen weights
-QWEN_MODEL="${QWEN_MODEL_PATH:-Qwen/Qwen3-4B}"
+# Optionally download Qwen3 weights
+QWEN_MODEL="${QWEN_MODEL_PATH:-Qwen/Qwen3-4B-Instruct}"
 if [ "${DOWNLOAD_QWEN:-true}" = "true" ]; then
     echo "Checking model weights for ${QWEN_MODEL}..."
     huggingface-cli download "$QWEN_MODEL"

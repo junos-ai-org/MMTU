@@ -5,8 +5,8 @@ experiment:
 
 model:
   backend: t5gemma
-  model_path: google/t5gemma-2b-2b
-  alias: t5gemma-2b-2b
+  model_path: google/t5gemma-2b-2b-ul2-it
+  alias: t5gemma-2b-2b-ul2-it
   dtype: bfloat16
 
 inference:
