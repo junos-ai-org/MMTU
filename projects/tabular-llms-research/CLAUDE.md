@@ -130,6 +130,11 @@ apply to any model and are worth enabling by default:
 
 **Applied in this project**: T5Gemma backend uses Flash Attention 2 + `torch.compile`.
 
+## Infrastructure
+- **Docker Hub**: Images hosted under `achithanar/` on Docker Hub
+  - `achithanar/mmtu-tabular-llms:latest` — GPU image for T5Gemma/Qwen3 inference
+- **Compute**: Running evaluations on RunPod (GPU cloud, Spot instances)
+
 ## Key Decisions
 - **Table permutation in prompts**: Parse markdown tables from pre-built HF prompts,
   permute columns/rows, re-serialize. Avoids rebuilding from raw data via build_data.py.
