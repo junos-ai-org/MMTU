@@ -5,8 +5,8 @@ experiment:
 
 model:
   backend: qwen3
-  model_path: Qwen/Qwen3-4B-Instruct
-  alias: Qwen3-4B-Instruct
+  model_path: Qwen/Qwen3-4B
+  alias: Qwen3-4B
 
 inference:
   max_input_tokens: 3566

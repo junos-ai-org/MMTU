@@ -17,7 +17,7 @@ huggingface-cli download "$T5GEMMA_MODEL"
 echo "  T5Gemma model weights ready."
 
 # Optionally download Qwen3 weights
-QWEN_MODEL="${QWEN_MODEL_PATH:-Qwen/Qwen3-4B-Instruct}"
+QWEN_MODEL="${QWEN_MODEL_PATH:-Qwen/Qwen3-4B}"
 if [ "${DOWNLOAD_QWEN:-true}" = "true" ]; then
     echo "Checking model weights for ${QWEN_MODEL}..."
     huggingface-cli download "$QWEN_MODEL"
