@@ -170,6 +170,112 @@ def _permute_table_block(
     return result
 
 
+def convert_table_to_natural_language(
+    header_cells: list[str],
+    data_rows: list[list[str]],
+    table_name: str | None = None,
+) -> str:
+    """Convert parsed table components into a natural language description.
+
+    Format:
+        You're presented with a table: `table name`
+        It has X columns and N rows.
+        Here are the serialized columns, one per line:
+        `col1`: val1, val2, val3 ...
+        `col2`: ...
+
+        Here are the serialized rows, one per line:
+        row1: `col1`: val1, `col2`: val2, ...
+        row2: ...
+    """
+    n_cols = len(header_cells)
+    n_rows = len(data_rows)
+
+    lines: list[str] = []
+
+    # Header
+    label = f"`{table_name}`" if table_name else "the following data"
+    lines.append(f"You're presented with a table: {label}")
+    lines.append(f"It has {n_cols} columns and {n_rows} rows.")
+
+    # Column-oriented view
+    lines.append("Here are the serialized columns, one per line:")
+    for col_idx, col_name in enumerate(header_cells):
+        values = [
+            row[col_idx] if col_idx < len(row) else ""
+            for row in data_rows
+        ]
+        lines.append(f"`{col_name}`: {', '.join(values)}")
+
+    # Row-oriented view
+    lines.append("")
+    lines.append("Here are the serialized rows, one per line:")
+    for row_idx, row in enumerate(data_rows, start=1):
+        pairs = []
+        for col_idx, col_name in enumerate(header_cells):
+            val = row[col_idx] if col_idx < len(row) else ""
+            pairs.append(f"`{col_name}`: {val}")
+        lines.append(f"row{row_idx}: {', '.join(pairs)}")
+
+    return "\n".join(lines)
+
+
+def _convert_table_block_to_nl(
+    lines: list[str],
+    start: int,
+    end: int,
+    table_name: str | None = None,
+) -> list[str]:
+    """Convert a single markdown table block to natural language lines."""
+    block_lines = lines[start:end]
+
+    # Find separator line
+    sep_idx = None
+    for i, line in enumerate(block_lines):
+        if _SEPARATOR_RE.match(line):
+            sep_idx = i
+            break
+
+    if sep_idx is None:
+        return block_lines  # Can't parse, return unchanged
+
+    header_cells = _parse_row(block_lines[sep_idx - 1])
+    data_rows = [
+        _parse_row(block_lines[i])
+        for i in range(sep_idx + 1, len(block_lines))
+    ]
+
+    nl_text = convert_table_to_natural_language(header_cells, data_rows, table_name)
+    return nl_text.split("\n")
+
+
+def convert_tables_to_nl_in_prompt(
+    prompt: str,
+    table_name: str | None = None,
+) -> str:
+    """Find all markdown tables in a prompt and replace them with natural language.
+
+    Args:
+        prompt: The full prompt text containing markdown tables.
+        table_name: Optional table name to include in the description.
+
+    Returns:
+        The prompt with tables replaced by natural language descriptions.
+    """
+    lines = prompt.split("\n")
+    blocks = _find_table_blocks(prompt)
+
+    if not blocks:
+        return prompt
+
+    # Process blocks in reverse order so line indices remain valid
+    for start, end in reversed(blocks):
+        new_block = _convert_table_block_to_nl(lines, start, end, table_name)
+        lines[start:end] = new_block
+
+    return "\n".join(lines)
+
+
 def permute_tables_in_prompt(
     prompt: str,
     shuffle_columns: bool = False,

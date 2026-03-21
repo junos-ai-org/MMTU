@@ -227,6 +227,10 @@ def run_experiment(
     shuffle_rows = permutation_cfg.get("shuffle_rows", False)
     permutation_seed = permutation_cfg.get("seed", seed)
 
+    # Table format settings
+    table_format_cfg = config.get("table_format", {})
+    table_format = table_format_cfg.get("format", "markdown")  # "markdown" or "natural_language"
+
     # Resolve run key
     if resume:
         if isinstance(resume, str):
@@ -254,6 +258,8 @@ def run_experiment(
     print(f"Backend: {model_cfg['backend']} | Model: {model_cfg['model_path']}")
     if shuffle_columns or shuffle_rows:
         print(f"Permutation: cols={shuffle_columns}, rows={shuffle_rows}, seed={permutation_seed}")
+    if table_format != "markdown":
+        print(f"Table format: {table_format}")
     print(f"Output: {output_dir}")
     print("=" * 60)
 
@@ -299,8 +305,18 @@ def run_experiment(
         n_total=dataset_cfg.get("total_samples"),
     )
 
-    # 3. Apply table permutation if configured
-    if shuffle_columns or shuffle_rows:
+    # 3. Apply table transformation if configured
+    if table_format == "natural_language":
+        print(f"\n[3/5] Converting tables to natural language...")
+        from table_permuter import convert_tables_to_nl_in_prompt
+        table_name = table_format_cfg.get("table_name", None)
+        for rec in sampled:
+            rec["prompt"] = convert_tables_to_nl_in_prompt(
+                rec["prompt"],
+                table_name=table_name,
+            )
+        print(f"  Converted {len(sampled)} prompts to natural language format.")
+    elif shuffle_columns or shuffle_rows:
         print(f"\n[3/5] Applying table permutation...")
         from table_permuter import permute_tables_in_prompt
         for rec in sampled:
@@ -312,7 +328,7 @@ def run_experiment(
             )
         print(f"  Permuted {len(sampled)} prompts.")
     else:
-        print("\n[3/5] No permutation configured, skipping.")
+        print("\n[3/5] No table transformation configured, skipping.")
 
     # 4. Run inference
     batch_size = inference_cfg.get("batch_size", 1)

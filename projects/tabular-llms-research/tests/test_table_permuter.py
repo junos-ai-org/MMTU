@@ -9,6 +9,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from table_permuter import (
     _find_table_blocks,
     _parse_row,
+    convert_table_to_natural_language,
+    convert_tables_to_nl_in_prompt,
     permute_tables_in_prompt,
 )
 
@@ -163,3 +165,81 @@ class TestBothPermutations:
         assert "25" in result
         assert "30" in result
         assert "35" in result
+
+
+class TestConvertTableToNaturalLanguage:
+    def test_basic_output(self):
+        header = ["Name", "Age", "City"]
+        rows = [["Alice", "25", "New York"], ["Bob", "30", "London"]]
+        result = convert_table_to_natural_language(header, rows)
+
+        assert "2 columns" not in result  # should say 3 columns
+        assert "3 columns" in result
+        assert "2 rows" in result
+
+    def test_column_serialization(self):
+        header = ["Name", "Age"]
+        rows = [["Alice", "25"], ["Bob", "30"]]
+        result = convert_table_to_natural_language(header, rows)
+
+        assert "`Name`: Alice, Bob" in result
+        assert "`Age`: 25, 30" in result
+
+    def test_row_serialization(self):
+        header = ["Name", "Age"]
+        rows = [["Alice", "25"], ["Bob", "30"]]
+        result = convert_table_to_natural_language(header, rows)
+
+        assert "row1: `Name`: Alice, `Age`: 25" in result
+        assert "row2: `Name`: Bob, `Age`: 30" in result
+
+    def test_table_name(self):
+        header = ["X"]
+        rows = [["1"]]
+        result = convert_table_to_natural_language(header, rows, table_name="my_table")
+        assert "`my_table`" in result
+
+    def test_no_table_name(self):
+        header = ["X"]
+        rows = [["1"]]
+        result = convert_table_to_natural_language(header, rows)
+        assert "the following data" in result
+
+
+class TestConvertTablesToNlInPrompt:
+    def test_replaces_table(self):
+        result = convert_tables_to_nl_in_prompt(SAMPLE_PROMPT)
+        # Markdown table pipes should be gone
+        assert "| Name" not in result
+        assert "|:---" not in result
+        # NL content should be present
+        assert "3 columns" in result
+        assert "3 rows" in result
+
+    def test_preserves_surrounding_text(self):
+        result = convert_tables_to_nl_in_prompt(SAMPLE_PROMPT)
+        assert "You are given the following table:" in result
+        assert "Question: What is Bob's age?" in result
+        assert "Answer:" in result
+
+    def test_all_data_preserved(self):
+        result = convert_tables_to_nl_in_prompt(SAMPLE_PROMPT)
+        for name in ["Alice", "Bob", "Charlie"]:
+            assert name in result
+        for val in ["25", "30", "35"]:
+            assert val in result
+        for city in ["New York", "London", "Tokyo"]:
+            assert city in result
+
+    def test_no_table_noop(self):
+        text = "Hello world\nNo tables here"
+        assert convert_tables_to_nl_in_prompt(text) == text
+
+    def test_two_tables(self):
+        prompt = f"Table A:\n{SAMPLE_TABLE}\n\nTable B:\n{SAMPLE_TABLE}\n"
+        result = convert_tables_to_nl_in_prompt(prompt)
+        # Both tables should be converted
+        assert result.count("3 columns") == 2
+        assert result.count("3 rows") == 2
+        # No markdown pipes should remain
+        assert "| Name" not in result
