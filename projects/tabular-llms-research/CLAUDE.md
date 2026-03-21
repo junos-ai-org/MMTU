@@ -34,6 +34,9 @@ projects/tabular-llms-research/
 │   ├── t5gemma-2b-smoke.yaml
 │   ├── t5gemma-2b-full.yaml
 │   └── t5gemma-2b-full-colperm.yaml
+├── docker/
+│   ├── Dockerfile
+│   └── entrypoint.sh
 ├── tests/
 │   └── test_table_permuter.py
 └── output/
