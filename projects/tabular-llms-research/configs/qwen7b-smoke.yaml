@@ -1,0 +1,49 @@
+experiment:
+  name: qwen7b-smoke
+  seed: 42
+  tags: [smoke, decoder-only, 7b, vllm, all-tasks]
+
+model:
+  backend: qwen3
+  model_path: Qwen/Qwen2.5-7B-Instruct
+  alias: Qwen2_5-7B-Instruct
+
+inference:
+  max_input_tokens: 3566  # 4096 - 530 (512 output + buffer)
+  max_output_tokens: 512
+  temperature: 0.0
+  batch_size: 8
+  vllm:
+    base_url: http://localhost:8000/v1
+    api_key: EMPTY
+
+dataset:
+  name: MMTU-benchmark/MMTU
+  split: train
+  total_samples: 25
+  tasks:
+    - Table-QA
+    - Table-Fact-Verification
+    - Error-Detect
+    - Entity-Matching
+    - Table-needle-in-a-haystack
+    - Table-Locate-by-Row-Col
+    - Schema-Matching
+    - Data-transform-reshape
+    - Data-Imputation
+    - List-to-table
+    - Formula-prediction-context
+    - semantic-transform
+    - semantic-join
+    - header-value-matching
+    - Arithmetic-Relationship
+    - Functional-Dependency
+    - String-Relationship
+    - Cell-entity-annotation
+    - Column-type-annotation
+    - Columns-property-anotation
+    - equi-join-detect
+    - NL2SQL
+    - Data-transform-pbe
+    - Transform-by-output-target-schema
+    - Transform-by-input-output-table
