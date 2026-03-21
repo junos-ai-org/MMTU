@@ -1,4 +1,4 @@
-FROM vllm/vllm-openai:latest
+FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel
 
 # System tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -6,10 +6,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Python dependencies — shared across all backends
-# vLLM image already includes: torch, transformers, accelerate, sentencepiece, vllm
 RUN pip install --no-cache-dir \
     pandas tabulate tiktoken tqdm xlsxwriter tenacity datasets openai azure-ai-inference \
-    pyyaml pytest protobuf
+    pyyaml pytest \
+    && ln -sf "$(which python3)" /usr/local/bin/python
+
+# T5Gemma backend dependencies (encoder-decoder via HuggingFace)
+RUN pip install --no-cache-dir \
+    transformers accelerate sentencepiece protobuf
+
+# Qwen3 backend dependencies (vLLM for serving)
+RUN pip install --no-cache-dir vllm
 
 # MMTU code — install outside /workspace (RunPod mounts a volume there)
 COPY . /opt/MMTU
