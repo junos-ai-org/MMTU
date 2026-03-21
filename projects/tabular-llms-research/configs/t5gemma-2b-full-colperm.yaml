@@ -1,0 +1,48 @@
+experiment:
+  name: t5gemma-2b-full-colperm
+  seed: 42
+  tags: [full, colperm, encoder-decoder, 2b-2b, huggingface]
+
+model:
+  backend: t5gemma
+  model_path: google/t5gemma-2b-2b
+  alias: t5gemma-2b-2b
+  dtype: bfloat16
+
+inference:
+  max_input_tokens: 3566
+  max_output_tokens: 512
+  temperature: 0.0
+  batch_size: 16
+
+permutation:
+  shuffle_columns: true
+  shuffle_rows: false
+  seed: 42
+
+dataset:
+  name: MMTU-benchmark/MMTU
+  split: train
+  samples_per_task: 8
+  tasks:
+    - Table-QA
+    - Table-Fact-Verification
+    - Error-Detect
+    - Entity-Matching
+    - Table-needle-in-a-haystack
+    - Table-Locate-by-Row-Col
+    - Schema-Matching
+    - Data-transform-reshape
+    - Data-Imputation
+    - List-to-table
+    - Formula-prediction-context
+    - semantic-transform
+    - semantic-join
+    - header-value-matching
+    - Arithmetic-Relationship
+    - Functional-Dependency
+    - String-Relationship
+    - Cell-entity-annotation
+    - Column-type-annotation
+    - Columns-property-anotation
+    - equi-join-detect
