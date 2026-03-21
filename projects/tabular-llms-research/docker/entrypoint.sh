@@ -16,8 +16,8 @@ echo "Checking model weights for ${T5GEMMA_MODEL}..."
 huggingface-cli download "$T5GEMMA_MODEL"
 echo "  T5Gemma model weights ready."
 
-# Optionally download Qwen weights (default to Qwen2.5-7B for NL format experiment)
-QWEN_MODEL="${QWEN_MODEL_PATH:-Qwen/Qwen2.5-7B-Instruct}"
+# Optionally download Qwen weights
+QWEN_MODEL="${QWEN_MODEL_PATH:-Qwen/Qwen3-4B}"
 if [ "${DOWNLOAD_QWEN:-true}" = "true" ]; then
     echo "Checking model weights for ${QWEN_MODEL}..."
     huggingface-cli download "$QWEN_MODEL"
