@@ -47,6 +47,8 @@ python projects/tabular-llms-research/build_dataset.py configs/dataset_baseline.
 ### Step 2: Run Inference
 ```bash
 # Both models evaluate the exact same artifact
+# Note: Add `wandb: true` to the `experiment` block in your YAML to automatically
+# sync your metrics, inputs, and outputs to the Weights & Biases dashboard!
 python projects/tabular-llms-research/run.py run configs/run_qwen_baseline.yaml
 python projects/tabular-llms-research/run.py run configs/run_t5gemma_baseline.yaml
 ```

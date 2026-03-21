@@ -22,6 +22,12 @@ from pathlib import Path
 
 import yaml
 
+try:
+    import wandb
+    WANDB_AVAILABLE = True
+except ImportError:
+    WANDB_AVAILABLE = False
+
 def _get_mmtu_root() -> Path:
     return Path(__file__).resolve().parent.parent.parent
 
@@ -181,19 +187,83 @@ def run_experiment(config: dict, config_path: str, resume: bool = False):
         str(result_file)
     ])
 
-    # 5. Log to Experiments Markdown automatically
+    # 5. Parse analysis and log automatically
     experiments_md = _get_project_dir() / "experiments.md"
     score_line = ""
     analysis_file = result_file.with_suffix(".analysis.md")
+
+    task_scores = {}
+    overall_score = 0.0
     if analysis_file.exists():
+        in_table = False
         with open(analysis_file) as f:
             for line in f:
                 if line.startswith("**Overall mean score:**"):
                     score_line = line.split("**:")[-1].strip()
+                    overall_score = float(score_line)
+
+                if "## Score Summary by Task" in line:
+                    in_table = True
+                    continue
+                if "## Per-Task Token" in line:
+                    in_table = False
+
+                if in_table and line.startswith("| ") and not line.startswith("| Task") and "---" not in line:
+                    parts = [p.strip() for p in line.split("|")]
+                    if len(parts) > 4:
+                        try:
+                            task_scores[parts[1]] = float(parts[4])
+                        except:
+                            pass
 
     with open(experiments_md, "a") as f:
         date_str = datetime.now().strftime("%Y-%m-%d")
         f.write(f"| {date_str} | `{exp_name}` | `{model_alias}` | {exp_cfg.get('purpose', 'N/A')} | {score_line} |\n")
+
+    # 6. Weights & Biases (W&B) Logging
+    use_wandb = exp_cfg.get("wandb", False)
+    if use_wandb:
+        if not WANDB_AVAILABLE:
+            print("WARNING: W&B is enabled in config, but 'wandb' package is not installed. Skipping W&B logging.")
+        else:
+            print(f"\n[5/4] Logging run to Weights & Biases...")
+            wandb.init(
+                project="mmtu-tabular-research",
+                name=f"{exp_name}-{model_alias}",
+                group=exp_name,
+                tags=exp_cfg.get("tags", []),
+                config=config,
+            )
+
+            # Log top-level score and task scores
+            wandb.log({"overall_score": overall_score})
+            for t_name, t_score in task_scores.items():
+                wandb.log({f"task/{t_name}": t_score})
+
+            # Log raw generation responses to W&B Table for visual debugging
+            print(f"  Uploading predictions table to W&B...")
+            table = wandb.Table(columns=["Task", "Test Case", "Prompt", "Generation", "Score", "Metric"])
+
+            # Since analyze.py just ran, it dumped a parsed JSONL with "score" inline (or we can re-evaluate)
+            # To keep it simple, we upload the raw results
+            try:
+                import pandas as pd
+                df = pd.read_json(result_file, lines=True)
+                for _, row in df.iterrows():
+                    meta = json.loads(row["metadata"])
+                    table.add_data(
+                        meta.get("task", ""),
+                        meta.get("test_case", ""),
+                        row.get("prompt", "")[:2000] + "..." if len(row.get("prompt", "")) > 2000 else row.get("prompt", ""),
+                        row.get("response", "")[:1000],
+                        -1, # Actual parsed score is in analysis table
+                        "raw"
+                    )
+                wandb.log({"predictions": table})
+            except Exception as e:
+                print(f"  Warning: failed to upload W&B Table: {e}")
+
+            wandb.finish()
 
     print(f"\nExperiment complete. Output logged to experiments.md!")
 
