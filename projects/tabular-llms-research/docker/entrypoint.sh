@@ -16,8 +16,8 @@ echo "Checking model weights for ${T5GEMMA_MODEL}..."
 huggingface-cli download "$T5GEMMA_MODEL"
 echo "  T5Gemma model weights ready."
 
-# Optionally download Qwen3 weights
-QWEN_MODEL="${QWEN_MODEL_PATH:-Qwen/Qwen3-4B}"
+# Optionally download Qwen weights (default to Qwen2.5-7B for NL format experiment)
+QWEN_MODEL="${QWEN_MODEL_PATH:-Qwen/Qwen2.5-7B-Instruct}"
 if [ "${DOWNLOAD_QWEN:-true}" = "true" ]; then
     echo "Checking model weights for ${QWEN_MODEL}..."
     huggingface-cli download "$QWEN_MODEL"
@@ -46,6 +46,10 @@ echo ""
 echo "  # Column permutation"
 echo "  python projects/tabular-llms-research/run.py run configs/t5gemma-2b-full-colperm.yaml"
 echo "  python projects/tabular-llms-research/run.py run configs/qwen3-4b-full-colperm.yaml"
+echo ""
+echo "  # Natural language table format (Qwen2.5-7B)"
+echo "  python projects/tabular-llms-research/run.py run configs/qwen3-4b-smoke-nl.yaml"
+echo "  python projects/tabular-llms-research/run.py run configs/qwen3-4b-full-nl.yaml"
 echo ""
 
 exec sleep infinity
