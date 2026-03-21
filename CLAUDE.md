@@ -103,3 +103,22 @@ to avoid requiring GPUs, model checkpoints, or network access. Run with `pytest 
 ## Projects & Experiments
 
 Active projects live in `projects/`, each with its own `CLAUDE.md` (goal, status, decisions) and `experiments.md` (chronological experiment log). Check there for context on ongoing work.
+
+When creating a new project, set up the following structure:
+
+```
+projects/<project-name>/
+├── CLAUDE.md              # Goal, status, architecture decisions
+├── experiments.md         # Chronological experiment log
+├── configs/               # YAML experiment configs
+├── backends/              # Model backend implementations
+├── docker/
+│   ├── Dockerfile.<backend>   # One Dockerfile per backend/model to avoid dependency conflicts
+│   ├── entrypoint-<backend>.sh
+│   └── build.sh           # Script to build all Docker images for the project
+└── run.py                 # Experiment runner
+```
+
+Key rules:
+- **One Dockerfile per backend** — different model frameworks (e.g. vLLM, HuggingFace transformers) often have conflicting dependencies (e.g. flash-attn ABI). Keep them in separate images.
+- **Include a `docker/build.sh`** — a single script that builds all images for the project. See `projects/tabular-llms-research/docker/build.sh` for an example.
