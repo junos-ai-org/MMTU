@@ -30,12 +30,21 @@ class T5GemmaBackend(InferenceBackend):
         print(f"Loading T5Gemma processor from {model_path}...")
         self.processor = AutoProcessor.from_pretrained(model_path)
 
-        print(f"Loading T5Gemma model from {model_path} (dtype={dtype})...")
+        # Use Flash Attention 2 if available, fall back to SDPA
+        attn_impl = "eager"
+        try:
+            import flash_attn  # noqa: F401
+            attn_impl = "flash_attention_2"
+        except ImportError:
+            attn_impl = "sdpa"
+            print("  flash-attn not installed, using SDPA attention.")
+
+        print(f"Loading T5Gemma model from {model_path} (dtype={dtype}, attn={attn_impl})...")
         self.model = AutoModelForSeq2SeqLM.from_pretrained(
             model_path,
             torch_dtype=dtype,
             device_map="auto",
-            attn_implementation="flash_attention_2",
+            attn_implementation=attn_impl,
         )
         self.model.eval()
 
@@ -44,7 +53,7 @@ class T5GemmaBackend(InferenceBackend):
         self.model = torch.compile(self.model)
 
         print(f"  T5Gemma ready on {self.device}. max_new_tokens={self.max_new_tokens}"
-              f" (flash_attention_2 + torch.compile)")
+              f" ({attn_impl} + torch.compile)")
 
     def generate(self, prompt: str) -> str:
         inputs = self.processor(
