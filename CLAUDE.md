@@ -122,3 +122,16 @@ projects/<project-name>/
 Key rules:
 - **One Dockerfile per backend** — different model frameworks (e.g. vLLM, HuggingFace transformers) often have conflicting dependencies (e.g. flash-attn ABI). Keep them in separate images.
 - **Include a `docker/build.sh`** — a single script that builds all images for the project. See `projects/tabular-llms-research/docker/build.sh` for an example.
+
+### Hierarchy
+
+- **Project** — a research effort (e.g. `tabular-llms-research`). Has its own `CLAUDE.md`, `experiments.md`, backends, configs, and Docker setup.
+- **Experiment** — a named comparison across models using the same data artifact (e.g. `encoder_vs_decoder_baseline`). Defined in run config YAML. Results logged to `experiments.md`.
+- **Run** — a single model execution within an experiment, identified by a timestamped run key (`YYYYMMDD-HHMMSS`). Each run directory contains frozen config, provenance JSON, result JSONL, and analysis output.
+
+### Experiment Workflow
+
+1. **Develop** — write code, configs, Dockerfiles locally. Push to git.
+2. **Build** — on the build server, run `docker/build.sh` to build images. Push to Docker Hub.
+3. **Run** — on RunPod, pull the image, generate dataset artifacts (`build_dataset.py`), run inference (`run.py run`).
+4. **Commit** — commit result files, analysis, and `experiments.md` updates back to git.
