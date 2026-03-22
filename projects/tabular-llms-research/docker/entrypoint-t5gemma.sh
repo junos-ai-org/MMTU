@@ -6,7 +6,7 @@ log()  { echo "[entrypoint] $(date '+%H:%M:%S') $*"; }
 warn() { echo "[entrypoint] $(date '+%H:%M:%S') WARNING: $*" >&2; }
 die()  { echo "[entrypoint] $(date '+%H:%M:%S') FATAL: $*" >&2; exit 1; }
 
-trap 'echo ""; die "entrypoint failed at line $LINENO (exit code $?). Check logs above."' ERR
+trap 'rc=$?; echo ""; die "entrypoint failed at line $LINENO (exit code $rc). Check logs above."' ERR
 
 # --- Deploy key -----------------------------------------------------------------
 if [ -n "${DEPLOY_KEY:-}" ]; then
