@@ -11,5 +11,14 @@ RUN pip install --no-cache-dir \
     pyyaml pytest huggingface_hub[cli] wandb \
     && ln -sf "$(which python3)" /usr/local/bin/python
 
-# MMTU code — install outside /workspace (RunPod mounts a volume there)
-COPY . /opt/MMTU
+# Convenience script to update code mid-session without restarting
+RUN cat <<'SCRIPT' > /usr/local/bin/mmtu-update && chmod +x /usr/local/bin/mmtu-update
+#!/bin/bash
+set -e
+cd /workspace/MMTU
+echo "Pulling latest code..."
+git pull
+echo "Installing requirements..."
+pip install -q -r requirements.txt
+echo "Done."
+SCRIPT

@@ -1,11 +1,20 @@
 #!/bin/bash
 set -e
 
-# Deploy latest code from image to persistent volume
-echo "Deploying MMTU code to /workspace/MMTU..."
-mkdir -p /workspace/MMTU
-cp -r /opt/MMTU/. /workspace/MMTU/
-echo "  Done."
+# Clone or update MMTU code
+MMTU_REPO="${MMTU_GIT_URL:-https://github.com/junos-ai-org/MMTU.git}"
+MMTU_REF="${MMTU_GIT_REF:-main}"
+
+if [ -d /workspace/MMTU/.git ]; then
+    echo "Updating MMTU code (ref: ${MMTU_REF})..."
+    cd /workspace/MMTU && git fetch origin && git checkout "$MMTU_REF" && git pull origin "$MMTU_REF" || true
+    cd /
+else
+    echo "Cloning MMTU code (ref: ${MMTU_REF})..."
+    git clone --depth 1 --branch "$MMTU_REF" "$MMTU_REPO" /workspace/MMTU
+fi
+
+pip install -q -r /workspace/MMTU/requirements.txt
 
 # Use persistent cache on /workspace (survives pod restarts with network volume)
 export HF_HOME="/workspace/.cache/huggingface"
@@ -31,6 +40,9 @@ echo "  python projects/tabular-llms-research/run.py run configs/t5gemma-9b-full
 echo ""
 echo "  # Column permutation"
 echo "  python projects/tabular-llms-research/run.py run configs/t5gemma-9b-full-colperm.yaml"
+echo ""
+echo "  # Update code mid-session (no restart needed)"
+echo "  mmtu-update"
 echo ""
 
 exec sleep infinity
