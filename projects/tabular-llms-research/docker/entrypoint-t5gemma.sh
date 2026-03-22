@@ -1,9 +1,16 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-# Set up GitHub deploy key from base64-encoded env var
-if [ -n "$DEPLOY_KEY" ]; then
-    echo "Setting up GitHub deploy key..."
+# --- Logging & error handling ---------------------------------------------------
+log()  { echo "[entrypoint] $(date '+%H:%M:%S') $*"; }
+warn() { echo "[entrypoint] $(date '+%H:%M:%S') WARNING: $*" >&2; }
+die()  { echo "[entrypoint] $(date '+%H:%M:%S') FATAL: $*" >&2; exit 1; }
+
+trap 'echo ""; die "entrypoint failed at line $LINENO (exit code $?). Check logs above."' ERR
+
+# --- Deploy key -----------------------------------------------------------------
+if [ -n "${DEPLOY_KEY:-}" ]; then
+    log "Setting up GitHub deploy key..."
     mkdir -p ~/.ssh
     python3 -c "
 import base64, os
@@ -21,33 +28,36 @@ Host github.com
 SSHEOF
     chmod 600 ~/.ssh/config
     ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
-    echo "  Done."
+    log "  Deploy key ready."
+else
+    warn "DEPLOY_KEY not set — git clone will only work if SSH keys are mounted or repo is public."
 fi
 
-# Clone or update MMTU code
+# --- Clone or update MMTU code --------------------------------------------------
 MMTU_REPO="${MMTU_GIT_URL:-git@github.com:junos-ai-org/MMTU.git}"
 MMTU_REF="${MMTU_GIT_REF:-main}"
 
 if [ -d /workspace/MMTU/.git ]; then
-    echo "Updating MMTU code (ref: ${MMTU_REF})..."
+    log "Updating MMTU code (ref: ${MMTU_REF})..."
     cd /workspace/MMTU && git fetch origin && git checkout "$MMTU_REF" && git pull origin "$MMTU_REF" || true
     cd /
 else
-    echo "Cloning MMTU code (ref: ${MMTU_REF})..."
+    log "Cloning MMTU code (ref: ${MMTU_REF}) from ${MMTU_REPO}..."
     git clone --depth 1 --branch "$MMTU_REF" "$MMTU_REPO" /workspace/MMTU
 fi
 
+log "Installing Python dependencies..."
 pip install -q -r /workspace/MMTU/requirements.txt
 
-# Use persistent cache on /workspace (survives pod restarts with network volume)
+# --- Model weights --------------------------------------------------------------
 export HF_HOME="/workspace/.cache/huggingface"
 
-# Download T5Gemma weights
 T5GEMMA_MODEL="${T5GEMMA_MODEL_PATH:-google/t5gemma-9b-9b-ul2-it}"
-echo "Checking model weights for ${T5GEMMA_MODEL}..."
+log "Downloading model weights for ${T5GEMMA_MODEL}..."
 huggingface-cli download "$T5GEMMA_MODEL"
-echo "  T5Gemma model weights ready."
+log "  T5Gemma model weights ready."
 
+# --- Ready banner ---------------------------------------------------------------
 echo ""
 echo "============================================================"
 echo "  T5Gemma image ready"
