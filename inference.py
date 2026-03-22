@@ -2,29 +2,21 @@ import pandas as pd
 import openai
 import os
 import random
-from io import StringIO
 import threading
 import queue
 import json
-from datetime import date
 from openai import AzureOpenAI, OpenAI
 from tenacity import (
     retry,
     retry_if_not_exception_type,
     stop_after_attempt,
-    wait_random_exponential,
-    wait_random,
-    wait_fixed,
-    RetryError
+    wait_random_exponential
 )  # for exponential backoff
 from tqdm import tqdm
 import time
-import urllib.request
-import re
-import shutil
 
 from azure.ai.inference import ChatCompletionsClient
-from azure.ai.inference.models import SystemMessage, UserMessage
+from azure.ai.inference.models import UserMessage
 from azure.core.credentials import AzureKeyCredential
 from azure.core.pipeline.transport import RequestsTransport
 
