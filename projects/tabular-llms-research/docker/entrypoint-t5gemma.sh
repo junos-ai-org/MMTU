@@ -9,7 +9,7 @@ die()  { echo "[entrypoint] $(date '+%H:%M:%S') FATAL: $*" >&2; exit 1; }
 trap 'rc=$?; echo ""; die "entrypoint failed at line $LINENO (exit code $rc). Check logs above."' ERR
 
 # --- Deploy key -----------------------------------------------------------------
-if [ -n "${DEPLOY_KEY:-}" ]; then
+_setup_deploy_key() {
     log "Setting up GitHub deploy key..."
     mkdir -p ~/.ssh
     python3 -c "
@@ -49,6 +49,12 @@ SSHEOF
     chmod 600 ~/.ssh/config
     ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
     log "  Deploy key ready."
+}
+
+if [ -n "${DEPLOY_KEY:-}" ]; then
+    if ! _setup_deploy_key; then
+        warn "Deploy key setup failed (see errors above). Continuing without it — SSH in to debug."
+    fi
 else
     warn "DEPLOY_KEY not set — git clone will only work if SSH keys are mounted or repo is public."
 fi
@@ -59,15 +65,16 @@ MMTU_REF="${MMTU_GIT_REF:-main}"
 
 if [ -d /workspace/MMTU/.git ]; then
     log "Updating MMTU code (ref: ${MMTU_REF})..."
-    cd /workspace/MMTU && git fetch origin && git checkout "$MMTU_REF" && git pull origin "$MMTU_REF" || true
-    cd /
+    (cd /workspace/MMTU && git fetch origin && git checkout "$MMTU_REF" && git pull origin "$MMTU_REF") || warn "Git update failed — continuing with existing code."
 else
     log "Cloning MMTU code (ref: ${MMTU_REF}) from ${MMTU_REPO}..."
-    git clone --depth 1 --branch "$MMTU_REF" "$MMTU_REPO" /workspace/MMTU
+    git clone --depth 1 --branch "$MMTU_REF" "$MMTU_REPO" /workspace/MMTU || warn "Git clone failed — SSH in to debug. Container will stay alive."
 fi
 
-log "Installing Python dependencies..."
-pip install -q -r /workspace/MMTU/requirements.txt
+if [ -f /workspace/MMTU/requirements.txt ]; then
+    log "Installing Python dependencies..."
+    pip install -q -r /workspace/MMTU/requirements.txt || warn "pip install failed — continuing anyway."
+fi
 
 # --- Model weights --------------------------------------------------------------
 export HF_HOME="/workspace/.cache/huggingface"
