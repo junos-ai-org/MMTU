@@ -234,36 +234,20 @@ def run_experiment(config: dict, config_path: str, resume: bool | str = False, t
 
     # 5. Parse analysis and log automatically
     experiments_md = _get_project_dir() / "experiments.md"
-    score_line = ""
-    analysis_file = result_file.with_suffix(".analysis.md")
+    analysis_json = result_file.with_suffix(".analysis.json")
 
     task_scores = {}
     overall_score = 0.0
-    if analysis_file.exists():
-        in_table = False
-        with open(analysis_file) as f:
-            for line in f:
-                if line.startswith("**Overall mean score:**"):
-                    score_line = line.split(":**")[-1].strip()
-                    overall_score = float(score_line)
-
-                if "## Score Summary by Task" in line:
-                    in_table = True
-                    continue
-                if "## Per-Task Token" in line:
-                    in_table = False
-
-                if in_table and line.startswith("| ") and not line.startswith("| Task") and "---" not in line:
-                    parts = [p.strip() for p in line.split("|")]
-                    if len(parts) > 4:
-                        try:
-                            task_scores[parts[1]] = float(parts[4])
-                        except:
-                            pass
+    if analysis_json.exists():
+        with open(analysis_json) as f:
+            summary = json.load(f)
+        overall_score = summary.get("overall_score", 0.0)
+        for task_name, task_data in summary.get("tasks", {}).items():
+            task_scores[task_name] = task_data.get("score", 0.0)
 
     with open(experiments_md, "a") as f:
         date_str = datetime.now().strftime("%Y-%m-%d")
-        f.write(f"| {date_str} | `{exp_name}` | `{model_alias}` | {exp_cfg.get('purpose', 'N/A')} | {score_line} |\n")
+        f.write(f"| {date_str} | `{exp_name}` | `{model_alias}` | {exp_cfg.get('purpose', 'N/A')} | {overall_score:.3f} |\n")
 
     # 6. Weights & Biases (W&B) Logging
     use_wandb = exp_cfg.get("wandb", False)
