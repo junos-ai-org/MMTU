@@ -18,7 +18,5 @@ set -e
 cd /workspace/MMTU
 echo "Pulling latest code..."
 git pull
-echo "Installing requirements..."
-pip install -q -r requirements.txt
 echo "Done."
 SCRIPT

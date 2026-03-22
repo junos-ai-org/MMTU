@@ -71,17 +71,12 @@ else
     git clone --depth 1 --branch "$MMTU_REF" "$MMTU_REPO" /workspace/MMTU || warn "Git clone failed — SSH in to debug. Container will stay alive."
 fi
 
-if [ -f /workspace/MMTU/requirements.txt ]; then
-    log "Installing Python dependencies..."
-    pip install -q -r /workspace/MMTU/requirements.txt || warn "pip install failed — continuing anyway."
-fi
-
 # --- Model weights --------------------------------------------------------------
 export HF_HOME="/workspace/.cache/huggingface"
 
 T5GEMMA_MODEL="${T5GEMMA_MODEL_PATH:-google/t5gemma-9b-9b-ul2-it}"
 log "Downloading model weights for ${T5GEMMA_MODEL}..."
-huggingface-cli download "$T5GEMMA_MODEL"
+python -m huggingface_hub download "$T5GEMMA_MODEL"
 log "  T5Gemma model weights ready."
 
 # --- Ready banner ---------------------------------------------------------------

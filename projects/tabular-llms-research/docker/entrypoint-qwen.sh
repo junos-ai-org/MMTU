@@ -71,17 +71,12 @@ else
     git clone --depth 1 --branch "$MMTU_REF" "$MMTU_REPO" /workspace/MMTU || warn "Git clone failed — SSH in to debug. Container will stay alive."
 fi
 
-if [ -f /workspace/MMTU/requirements.txt ]; then
-    log "Installing Python dependencies..."
-    pip install -q -r /workspace/MMTU/requirements.txt || warn "pip install failed — continuing anyway."
-fi
-
 # --- Model weights --------------------------------------------------------------
 export HF_HOME="/workspace/.cache/huggingface"
 
 QWEN_MODEL="${QWEN_MODEL_PATH:-Qwen/Qwen2.5-14B-Instruct}"
 log "Downloading model weights for ${QWEN_MODEL}..."
-huggingface-cli download "$QWEN_MODEL"
+python -m huggingface_hub download "$QWEN_MODEL"
 log "  Qwen2.5 model weights ready."
 
 # --- Ready banner ---------------------------------------------------------------
