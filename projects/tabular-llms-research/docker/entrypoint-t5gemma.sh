@@ -76,7 +76,7 @@ export HF_HOME="/workspace/.cache/huggingface"
 
 T5GEMMA_MODEL="${T5GEMMA_MODEL_PATH:-google/t5gemma-9b-9b-ul2-it}"
 log "Downloading model weights for ${T5GEMMA_MODEL}..."
-python -m huggingface_hub download "$T5GEMMA_MODEL"
+python -c "from huggingface_hub import snapshot_download; snapshot_download('${T5GEMMA_MODEL}')"
 log "  T5Gemma model weights ready."
 
 # --- Ready banner ---------------------------------------------------------------

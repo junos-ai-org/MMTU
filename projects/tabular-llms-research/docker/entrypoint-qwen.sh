@@ -76,7 +76,7 @@ export HF_HOME="/workspace/.cache/huggingface"
 
 QWEN_MODEL="${QWEN_MODEL_PATH:-Qwen/Qwen2.5-14B-Instruct}"
 log "Downloading model weights for ${QWEN_MODEL}..."
-python -m huggingface_hub download "$QWEN_MODEL"
+python -c "from huggingface_hub import snapshot_download; snapshot_download('${QWEN_MODEL}')"
 log "  Qwen2.5 model weights ready."
 
 # --- Ready banner ---------------------------------------------------------------
