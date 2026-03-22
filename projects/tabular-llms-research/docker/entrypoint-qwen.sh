@@ -1,6 +1,15 @@
 #!/bin/bash
 set -e
 
+# Set up SSH deploy key from RunPod secret (if provided)
+if [ -n "$DEPLOY_KEY" ]; then
+    mkdir -p ~/.ssh
+    echo "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+    chmod 600 ~/.ssh/id_ed25519
+    ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+    echo "SSH deploy key configured."
+fi
+
 # Clone or update MMTU code
 MMTU_REPO="${MMTU_GIT_URL:-git@github.com:junos-ai-org/MMTU.git}"
 MMTU_REF="${MMTU_GIT_REF:-main}"
