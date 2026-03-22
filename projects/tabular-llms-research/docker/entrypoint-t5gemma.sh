@@ -13,10 +13,30 @@ if [ -n "${DEPLOY_KEY:-}" ]; then
     log "Setting up GitHub deploy key..."
     mkdir -p ~/.ssh
     python3 -c "
-import base64, os
-key = os.environ['DEPLOY_KEY']
-key += '=' * (-len(key) % 4)
-open('/root/.ssh/github_deploy_key','wb').write(base64.b64decode(key))
+import base64, os, sys
+
+raw = os.environ['DEPLOY_KEY'].strip()
+# Strip whitespace/newlines that sneak in from env var quoting
+raw = raw.replace(' ', '').replace('\n', '').replace('\r', '')
+# Pad to a multiple of 4
+raw += '=' * (-len(raw) % 4)
+
+n_data = len(raw.rstrip('='))
+if n_data % 4 == 1:
+    print(f'ERROR: DEPLOY_KEY has {n_data} base64 data chars (remainder 1 mod 4).', file=sys.stderr)
+    print('This is not valid base64 — the key is truncated or corrupted.', file=sys.stderr)
+    print('Re-generate with:  base64 -w0 < deploy_key > deploy_key.b64', file=sys.stderr)
+    sys.exit(1)
+
+try:
+    decoded = base64.b64decode(raw)
+except Exception as e:
+    print(f'ERROR: Failed to base64-decode DEPLOY_KEY: {e}', file=sys.stderr)
+    print(f'Key length (after cleanup): {len(raw)} chars', file=sys.stderr)
+    sys.exit(1)
+
+open('/root/.ssh/github_deploy_key', 'wb').write(decoded)
+print(f'  Decoded deploy key ({len(decoded)} bytes).')
 "
     chmod 600 ~/.ssh/github_deploy_key
     cat > ~/.ssh/config << 'SSHEOF'
