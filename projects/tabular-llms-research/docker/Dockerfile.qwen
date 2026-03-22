@@ -10,7 +10,7 @@ RUN cat <<'SCRIPT' > /entrypoint.sh && chmod +x /entrypoint.sh
 set -e
 
 # Clone or update MMTU code
-MMTU_REPO="${MMTU_GIT_URL:-https://github.com/junos-ai-org/MMTU.git}"
+MMTU_REPO="${MMTU_GIT_URL:-git@github.com:junos-ai-org/MMTU.git}"
 MMTU_REF="${MMTU_GIT_REF:-main}"
 
 if [ -d /workspace/MMTU/.git ]; then
