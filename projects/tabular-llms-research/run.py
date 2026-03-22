@@ -244,7 +244,7 @@ def run_experiment(config: dict, config_path: str, resume: bool | str = False, t
         with open(analysis_file) as f:
             for line in f:
                 if line.startswith("**Overall mean score:**"):
-                    score_line = line.split("**:")[-1].strip()
+                    score_line = line.split(":**")[-1].strip()
                     overall_score = float(score_line)
 
                 if "## Score Summary by Task" in line:
