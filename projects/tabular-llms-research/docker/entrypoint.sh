@@ -1,6 +1,29 @@
 #!/bin/bash
 set -e
 
+# Set up GitHub deploy key from base64-encoded env var
+if [ -n "$DEPLOY_KEY" ]; then
+    echo "Setting up GitHub deploy key..."
+    mkdir -p ~/.ssh
+    python3 -c "
+import base64, os
+key = os.environ['DEPLOY_KEY']
+key += '=' * (-len(key) % 4)
+open('/root/.ssh/github_deploy_key','wb').write(base64.b64decode(key))
+"
+    chmod 600 ~/.ssh/github_deploy_key
+    cat > ~/.ssh/config << 'SSHEOF'
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/github_deploy_key
+    IdentitiesOnly yes
+SSHEOF
+    chmod 600 ~/.ssh/config
+    ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+    echo "  Done."
+fi
+
 # Deploy latest code from image to persistent volume
 echo "Deploying MMTU code to /workspace/MMTU..."
 mkdir -p /workspace/MMTU
