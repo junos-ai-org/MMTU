@@ -4,14 +4,13 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$PROJECT_DIR/../.." && pwd)"
-PROJECT_NAME="$(basename "$PROJECT_DIR")"
 
 DEFAULT_REPO="achithanar"
 DEFAULT_TAG="latest"
 
 usage() {
     cat <<EOF
-Build and push Docker images for ${PROJECT_NAME}.
+Build and push Docker images for tabular-llms-research.
 
 Usage: $(basename "$0") [OPTIONS]
 
@@ -22,13 +21,14 @@ Options:
   -h, --help     Show this help
 
 Images built:
-  REPO/${PROJECT_NAME}:TAG-t5gemma
-  REPO/${PROJECT_NAME}:TAG-qwen
+  REPO/tabular-llms-base:TAG       (shared base — not pushed)
+  REPO/tabular-llms-t5gemma:TAG
+  REPO/tabular-llms-qwen:TAG
 
 Examples:
-  $(basename "$0")                          # ${DEFAULT_REPO}/${PROJECT_NAME}:latest-t5gemma
-  $(basename "$0") --tag v2                 # ${DEFAULT_REPO}/${PROJECT_NAME}:v2-t5gemma
-  $(basename "$0") --repo myorg --tag v2    # myorg/${PROJECT_NAME}:v2-t5gemma
+  $(basename "$0")                          # ${DEFAULT_REPO}/tabular-llms-qwen:latest
+  $(basename "$0") --tag v2                 # ${DEFAULT_REPO}/tabular-llms-qwen:v2
+  $(basename "$0") --repo myorg --tag v2    # myorg/tabular-llms-qwen:v2
   $(basename "$0") --no-push               # build only
 EOF
 }
@@ -47,19 +47,26 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-IMAGE="${REPO}/${PROJECT_NAME}"
+BASE_IMAGE="${REPO}/tabular-llms-base:${TAG}"
 IMAGES=()
 
+echo "Building base image (${BASE_IMAGE})..."
+docker build -f "$SCRIPT_DIR/Dockerfile.base" \
+    -t "${BASE_IMAGE}" "$REPO_ROOT"
+
+echo ""
 echo "Building T5Gemma image..."
 docker build -f "$SCRIPT_DIR/Dockerfile.t5gemma" \
-    -t "${IMAGE}:${TAG}-t5gemma" "$REPO_ROOT"
-IMAGES+=("${IMAGE}:${TAG}-t5gemma")
+    --build-arg "BASE_IMAGE=${BASE_IMAGE}" \
+    -t "${REPO}/tabular-llms-t5gemma:${TAG}" "$REPO_ROOT"
+IMAGES+=("${REPO}/tabular-llms-t5gemma:${TAG}")
 
 echo ""
 echo "Building Qwen image..."
 docker build -f "$SCRIPT_DIR/Dockerfile.qwen" \
-    -t "${IMAGE}:${TAG}-qwen" "$REPO_ROOT"
-IMAGES+=("${IMAGE}:${TAG}-qwen")
+    --build-arg "BASE_IMAGE=${BASE_IMAGE}" \
+    -t "${REPO}/tabular-llms-qwen:${TAG}" "$REPO_ROOT"
+IMAGES+=("${REPO}/tabular-llms-qwen:${TAG}")
 
 if [ "$PUSH" = true ]; then
     echo ""

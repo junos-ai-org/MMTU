@@ -1,15 +1,5 @@
-FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel
-
-# System tools
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    screen vim grep htop curl net-tools procps git \
-    && rm -rf /var/lib/apt/lists/*
-
-# Python dependencies — shared across all backends
-RUN pip install --no-cache-dir \
-    pandas tabulate tiktoken tqdm xlsxwriter tenacity datasets openai azure-ai-inference \
-    pyyaml pytest \
-    && ln -sf "$(which python3)" /usr/local/bin/python
+ARG BASE_IMAGE=tabular-llms-base:latest
+FROM ${BASE_IMAGE}
 
 # Qwen2.5 backend: vLLM (brings its own attention kernels, no flash-attn needed)
 RUN pip install --no-cache-dir vllm
