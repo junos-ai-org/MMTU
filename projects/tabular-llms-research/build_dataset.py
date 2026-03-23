@@ -7,7 +7,8 @@ samples evenly across tasks, optionally applies table permutations, and
 saves a static JSONL artifact for models to evaluate against.
 
 Usage:
-    python projects/tabular-llms-research/build_dataset.py configs/dataset_full.yaml
+    python projects/tabular-llms-research/build_dataset.py \
+        experiments/encoder_vs_decoder_baseline/configs/dataset.yaml
 """
 
 import argparse
@@ -36,9 +37,10 @@ def load_config(config_path: str) -> dict:
     with open(path) as f:
         return yaml.safe_load(f)
 
-def build_dataset(config: dict, output_path: str):
+def build_dataset(config: dict, output_path: str, config_path: str | None = None):
     dataset_cfg = config["dataset"]
     seed = dataset_cfg.get("seed", 42)
+    min_tokens = dataset_cfg.get("min_input_tokens", 0)
     max_tokens = dataset_cfg.get("max_input_tokens", 3566)
     tasks = dataset_cfg["tasks"]
     n_per_task = dataset_cfg.get("samples_per_task")
@@ -74,7 +76,7 @@ def build_dataset(config: dict, output_path: str):
 
     by_task = {t: [] for t in tasks}
     for (task, rec), tc in zip(task_records, token_counts):
-        if tc <= max_tokens:
+        if min_tokens <= tc <= max_tokens:
             by_task[task].append(rec)
 
     # Sample
@@ -105,7 +107,10 @@ def build_dataset(config: dict, output_path: str):
     # Save artifact
     out_file = Path(output_path)
     if not out_file.is_absolute():
-        out_file = _get_project_dir() / out_file
+        if config_path:
+            out_file = Path(config_path).resolve().parent / out_file
+        else:
+            out_file = _get_project_dir() / out_file
     out_file.parent.mkdir(parents=True, exist_ok=True)
 
     with open(out_file, "w") as f:
@@ -125,4 +130,7 @@ if __name__ == "__main__":
         print("Error: Config must specify output.artifact_path")
         sys.exit(1)
 
-    build_dataset(cfg, cfg["output"]["artifact_path"])
+    config_resolved = Path(args.config)
+    if not config_resolved.is_absolute():
+        config_resolved = _get_project_dir() / config_resolved
+    build_dataset(cfg, cfg["output"]["artifact_path"], config_path=str(config_resolved))

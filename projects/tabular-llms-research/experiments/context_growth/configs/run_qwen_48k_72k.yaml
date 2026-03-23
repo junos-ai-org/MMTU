@@ -1,10 +1,10 @@
 experiment:
-  name: encoder_vs_decoder_baseline
-  purpose: "Baseline comparison of Qwen2.5-14B (decoder) vs T5Gemma-9B (enc-dec) on MMTU"
-  tags: [baseline, 14b, decoder-only]
+  name: context_growth_48k_72k
+  purpose: "Measure Qwen2.5-14B accuracy on inputs in the 48k_72k token bucket"
+  tags: [context-growth, 14b, decoder-only, 48k_72k]
 
 data:
-  artifact_path: artifacts/datasets/baseline_150_samples.jsonl
+  artifact_path: ../artifacts/bucket_48k_72k.jsonl
 
 model:
   backend: qwen

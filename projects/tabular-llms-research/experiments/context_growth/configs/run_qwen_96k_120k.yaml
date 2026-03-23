@@ -1,0 +1,20 @@
+experiment:
+  name: context_growth_96k_120k
+  purpose: "Measure Qwen2.5-14B accuracy on inputs in the 96k_120k token bucket"
+  tags: [context-growth, 14b, decoder-only, 96k_120k]
+
+data:
+  artifact_path: ../artifacts/bucket_96k_120k.jsonl
+
+model:
+  backend: qwen
+  model_path: Qwen/Qwen2.5-14B-Instruct
+  alias: Qwen2.5-14B-Instruct
+
+inference:
+  max_output_tokens: 512
+  temperature: 0.0
+  batch_size: 16
+  vllm:
+    base_url: http://localhost:8000/v1
+    api_key: EMPTY

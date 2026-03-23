@@ -4,7 +4,7 @@ experiment:
   tags: [baseline, 9b, encoder-decoder]
 
 data:
-  artifact_path: artifacts/datasets/baseline_150_samples.jsonl
+  artifact_path: ../artifacts/baseline.jsonl
 
 model:
   backend: t5gemma

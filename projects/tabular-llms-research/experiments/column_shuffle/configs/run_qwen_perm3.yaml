@@ -1,0 +1,20 @@
+experiment:
+  name: column_shuffle_perm3
+  purpose: "Qwen2.5-14B on column-shuffled data (permutation seed 3)"
+  tags: [column-shuffle, 14b, decoder-only, perm3]
+
+data:
+  artifact_path: ../artifacts/perm3.jsonl
+
+model:
+  backend: qwen
+  model_path: Qwen/Qwen2.5-14B-Instruct
+  alias: Qwen2.5-14B-Instruct
+
+inference:
+  max_output_tokens: 512
+  temperature: 0.0
+  batch_size: 16
+  vllm:
+    base_url: http://localhost:8000/v1
+    api_key: EMPTY

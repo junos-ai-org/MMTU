@@ -1,0 +1,31 @@
+dataset:
+  name: MMTU-benchmark/MMTU
+  split: train
+  tasks:
+    - Table-QA
+    - Table-Fact-Verification
+    - Entity-Matching
+    - Table-needle-in-a-haystack
+    - Table-Locate-by-Row-Col
+    - Schema-Matching
+    - Data-Imputation
+    - List-to-table
+    - semantic-transform
+    - semantic-join
+    - header-value-matching
+    - Functional-Dependency
+    - Cell-entity-annotation
+    - Column-type-annotation
+    - equi-join-detect
+
+  seed: 42
+  samples_per_task: 8
+  max_input_tokens: 7680
+
+permutation:
+  shuffle_columns: true
+  shuffle_rows: false
+  seed: 3
+
+output:
+  artifact_path: ../artifacts/perm3.jsonl

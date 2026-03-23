@@ -4,8 +4,8 @@ Compare output directories side-by-side.
 
 Usage:
     python projects/tabular-llms-research/compare.py \
-      projects/tabular-llms-research/output/encoder_vs_decoder_baseline/Qwen2.5-14B-Instruct \
-      projects/tabular-llms-research/output/encoder_vs_decoder_baseline/t5gemma-9b-ul2-it
+      experiments/encoder_vs_decoder_baseline/output/Qwen2.5-14B-Instruct/latest \
+      experiments/encoder_vs_decoder_baseline/output/t5gemma-9b-9b-ul2-it/latest
 """
 
 import argparse

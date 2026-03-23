@@ -10,27 +10,33 @@ robustness to column/row permutations.
 
 ```
 projects/tabular-llms-research/
-├── build_dataset.py            # Step 1: Deterministic artifact generator
-├── run.py                      # Step 2: Entry point (run, evaluate, list)
-├── analyze.py                  # Step 3: Post-run analysis
-├── compare.py                  # Step 4: Side-by-side model comparison
+├── build_dataset.py            # Deterministic artifact generator
+├── run.py                      # Entry point (run, evaluate, list)
+├── analyze.py                  # Post-run analysis
+├── compare.py                  # Side-by-side model comparison
 ├── table_permuter.py           # Used by build_dataset.py
 ├── backends/
 │   ├── base.py
 │   ├── qwen_backend.py         # Qwen2.5 via vLLM OpenAI API
 │   └── t5gemma_backend.py      # T5Gemma via HuggingFace transformers
-├── configs/
-│   ├── dataset_baseline.yaml   # Config for dataset generation
-│   ├── dataset_colperm.yaml
-│   ├── run_qwen_baseline.yaml  # Config for model inference
-│   └── run_t5gemma_baseline.yaml
-└── output/
-    └── encoder_vs_decoder_baseline/     # Experiment Name
-        ├── Qwen2.5-14B-Instruct/        # Model output directory
-        │   ├── config.yaml
-        │   ├── result.jsonl
-        │   └── analysis.md
-        └── t5gemma-9b-9b-ul2-it/
+├── docker/
+│   ├── build.sh                # Build all Docker images
+│   ├── Dockerfile.base         # Shared base image
+│   ├── Dockerfile.qwen         # Qwen backend (vLLM)
+│   └── Dockerfile.t5gemma      # T5Gemma backend (transformers)
+└── experiments/                # Each experiment is self-contained
+    ├── encoder_vs_decoder_baseline/
+    │   ├── configs/            # dataset.yaml, run_qwen.yaml, etc.
+    │   ├── artifacts/          # Generated JSONL datasets
+    │   └── output/             # Model outputs per run
+    ├── context_growth/         # Qwen accuracy vs input token length
+    │   ├── configs/            # 5 bucket datasets + qwen runs + smoke
+    │   ├── artifacts/
+    │   └── output/
+    └── column_shuffle/         # Robustness to column permutation
+        ├── configs/            # 5 perm datasets + qwen/t5gemma runs + smoke
+        ├── artifacts/
+        └── output/
 ```
 
 ## Workflow (Deterministic & Tracked)
@@ -40,26 +46,42 @@ Outputs are grouped by *experiment*, not by model, so you can easily compare run
 
 ### Step 1: Generate Dataset Artifact
 ```bash
-# Builds artifacts/datasets/baseline_150_samples.jsonl
-python projects/tabular-llms-research/build_dataset.py configs/dataset_baseline.yaml
+# Build dataset for an experiment (paths resolve relative to config file)
+python projects/tabular-llms-research/build_dataset.py \
+    experiments/encoder_vs_decoder_baseline/configs/dataset.yaml
 ```
 
 ### Step 2: Run Inference
 ```bash
 # Both models evaluate the exact same artifact
-# Note: Add `wandb: true` to the `experiment` block in your YAML to automatically
-# sync your metrics, inputs, and outputs to the Weights & Biases dashboard!
-python projects/tabular-llms-research/run.py run configs/run_qwen_baseline.yaml
-python projects/tabular-llms-research/run.py run configs/run_t5gemma_baseline.yaml
+# Note: Add `wandb: true` to the `experiment` block in your YAML to enable W&B.
+python projects/tabular-llms-research/run.py run \
+    experiments/encoder_vs_decoder_baseline/configs/run_qwen.yaml
+python projects/tabular-llms-research/run.py run \
+    experiments/encoder_vs_decoder_baseline/configs/run_t5gemma.yaml
 ```
 
 ### Step 3: Compare Results
 ```bash
-# View side-by-side delta of the two runs
 python projects/tabular-llms-research/compare.py \
-    projects/tabular-llms-research/output/encoder_vs_decoder_baseline/Qwen2.5-14B-Instruct \
-    projects/tabular-llms-research/output/encoder_vs_decoder_baseline/t5gemma-9b-9b-ul2-it
+    experiments/encoder_vs_decoder_baseline/output/Qwen2.5-14B-Instruct/latest \
+    experiments/encoder_vs_decoder_baseline/output/t5gemma-9b-9b-ul2-it/latest
 ```
+
+## Experiments
+
+### encoder_vs_decoder_baseline
+Baseline comparison of Qwen2.5-14B (decoder-only) vs T5Gemma-9B (encoder-decoder)
+on 15 non-hard MMTU tasks. 8 samples/task.
+
+### context_growth (Qwen only)
+How does Qwen2.5-14B accuracy change as input context grows? 5 token-length buckets:
+0-24K, 24K-48K, 48K-72K, 72K-96K, 96K-120K. 8 samples/task per bucket.
+
+### column_shuffle (Qwen + T5Gemma)
+Robustness to column permutation. 5 datasets with the same questions but different
+random column orderings (permutation seeds 1-5). 8 samples/task. Tests whether
+encoder-decoder architecture is more robust to structural changes.
 
 ## Hard Tasks (Near-Total Failure)
 

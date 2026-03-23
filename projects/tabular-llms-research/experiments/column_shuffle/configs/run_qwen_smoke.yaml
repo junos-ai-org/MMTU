@@ -1,11 +1,10 @@
 experiment:
-  name: encoder_vs_decoder_smoke
-  purpose: "Smoke test: verify Qwen2.5-14B pipeline works end-to-end"
-  tags: [smoke, 14b, decoder-only]
-  wandb: true
+  name: column_shuffle_smoke
+  purpose: "Smoke test: verify column_shuffle pipeline for Qwen"
+  tags: [smoke, column-shuffle, 14b, decoder-only]
 
 data:
-  artifact_path: artifacts/datasets/smoke_42_samples.jsonl
+  artifact_path: ../artifacts/smoke.jsonl
 
 model:
   backend: qwen

@@ -1,0 +1,18 @@
+experiment:
+  name: column_shuffle_perm3
+  purpose: "T5Gemma-9B on column-shuffled data (permutation seed 3)"
+  tags: [column-shuffle, 9b, encoder-decoder, perm3]
+
+data:
+  artifact_path: ../artifacts/perm3.jsonl
+
+model:
+  backend: t5gemma
+  model_path: google/t5gemma-9b-9b-ul2-it
+  alias: t5gemma-9b-9b-ul2-it
+  dtype: bfloat16
+
+inference:
+  max_output_tokens: 512
+  temperature: 0.0
+  batch_size: 16

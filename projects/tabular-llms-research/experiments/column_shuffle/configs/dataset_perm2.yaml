@@ -4,33 +4,28 @@ dataset:
   tasks:
     - Table-QA
     - Table-Fact-Verification
-    - Error-Detect
     - Entity-Matching
     - Table-needle-in-a-haystack
     - Table-Locate-by-Row-Col
     - Schema-Matching
-    - Data-transform-reshape
     - Data-Imputation
     - List-to-table
-    - Formula-prediction-context
     - semantic-transform
     - semantic-join
     - header-value-matching
-    - Arithmetic-Relationship
     - Functional-Dependency
-    - String-Relationship
     - Cell-entity-annotation
     - Column-type-annotation
-    - Columns-property-anotation
     - equi-join-detect
 
   seed: 42
-  samples_per_task: 24
+  samples_per_task: 8
   max_input_tokens: 7680
 
 permutation:
-  shuffle_columns: false
+  shuffle_columns: true
   shuffle_rows: false
+  seed: 2
 
 output:
-  artifact_path: artifacts/datasets/full_large_500_samples.jsonl
+  artifact_path: ../artifacts/perm2.jsonl

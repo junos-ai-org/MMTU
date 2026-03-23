@@ -1,0 +1,31 @@
+dataset:
+  name: MMTU-benchmark/MMTU
+  split: train
+  tasks:
+    - Table-QA
+    - Table-Fact-Verification
+    - Entity-Matching
+    - Table-needle-in-a-haystack
+    - Table-Locate-by-Row-Col
+    - Schema-Matching
+    - Data-Imputation
+    - List-to-table
+    - semantic-transform
+    - semantic-join
+    - header-value-matching
+    - Functional-Dependency
+    - Cell-entity-annotation
+    - Column-type-annotation
+    - equi-join-detect
+
+  seed: 42
+  samples_per_task: 2
+  min_input_tokens: 0
+  max_input_tokens: 24000
+
+permutation:
+  shuffle_columns: false
+  shuffle_rows: false
+
+output:
+  artifact_path: ../artifacts/smoke.jsonl

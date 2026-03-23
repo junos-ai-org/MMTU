@@ -3,10 +3,11 @@
 tabular-llms-research: Experiment runner.
 
 Executes inference on a pre-built static dataset artifact.
-Organizes output by <experiment_name>/<model_alias>/.
+Output is written to the experiment directory (sibling of the config's parent).
 
 Usage:
-    python projects/tabular-llms-research/run.py run configs/run_qwen_full.yaml
+    python projects/tabular-llms-research/run.py run \
+        experiments/encoder_vs_decoder_baseline/configs/run_qwen.yaml
     python projects/tabular-llms-research/run.py evaluate <result_file>
     python projects/tabular-llms-research/run.py list
 """
@@ -35,8 +36,8 @@ def _make_run_key(tag: str | None = None) -> str:
         key = f"{key}_{tag}"
     return key
 
-def _find_latest_run(exp_name: str, model_alias: str) -> Path | None:
-    exp_root = _get_project_dir() / "output" / exp_name / model_alias
+def _find_latest_run(experiment_dir: Path, model_alias: str) -> Path | None:
+    exp_root = experiment_dir / "output" / model_alias
     if not exp_root.exists():
         return None
     latest_link = exp_root / "latest"
@@ -90,16 +91,22 @@ def run_experiment(config: dict, config_path: str, resume: bool | str = False, t
     model_alias = model_cfg["alias"]
     artifact_path = data_cfg["artifact_path"]
 
+    # Resolve experiment directory from config file location
+    config_file = Path(config_path)
+    if not config_file.is_absolute():
+        config_file = _get_project_dir() / config_file
+    experiment_dir = config_file.resolve().parent.parent
+
     # Resolve run key
     if resume:
         if isinstance(resume, str) and resume != "":
             run_key = resume
-            candidate = _get_project_dir() / "output" / exp_name / model_alias / run_key
+            candidate = experiment_dir / "output" / model_alias / run_key
             if not candidate.exists():
                 print(f"Error: run '{run_key}' not found.")
                 sys.exit(1)
         else:
-            latest = _find_latest_run(exp_name, model_alias)
+            latest = _find_latest_run(experiment_dir, model_alias)
             if latest is None:
                 print(f"Error: no previous runs found for '{exp_name}/{model_alias}'")
                 sys.exit(1)
@@ -108,8 +115,8 @@ def run_experiment(config: dict, config_path: str, resume: bool | str = False, t
     else:
         run_key = _make_run_key(tag)
 
-    # Output dir: output/<experiment_name>/<model_alias>/<run_key>/
-    out_dir = _get_project_dir() / "output" / exp_name / model_alias / run_key
+    # Output dir: <experiment_dir>/output/<model_alias>/<run_key>/
+    out_dir = experiment_dir / "output" / model_alias / run_key
     out_dir.mkdir(parents=True, exist_ok=True)
     _update_latest_symlink(out_dir)
 
@@ -140,7 +147,7 @@ def run_experiment(config: dict, config_path: str, resume: bool | str = False, t
     # 1. Load Data
     artifact_file = Path(artifact_path)
     if not artifact_file.is_absolute():
-        artifact_file = _get_project_dir() / artifact_file
+        artifact_file = config_file.resolve().parent / artifact_file
 
     if not artifact_file.exists():
         print(f"FATAL: Dataset artifact not found at {artifact_file}")
@@ -311,14 +318,18 @@ def cmd_evaluate(args):
     subprocess.run([sys.executable, str(_get_mmtu_root() / "evaluate.py"), str(res_file)], cwd=str(_get_mmtu_root()))
 
 def cmd_list(args):
-    out_dir = _get_project_dir() / "output"
-    if not out_dir.exists():
+    experiments_dir = _get_project_dir() / "experiments"
+    if not experiments_dir.exists():
         print("No experiments found.")
         return
-    exps = [d for d in out_dir.iterdir() if d.is_dir()]
+    exps = [d for d in experiments_dir.iterdir() if d.is_dir()]
     for exp in sorted(exps):
         print(f"\nExperiment: {exp.name}")
-        models = [m for m in exp.iterdir() if m.is_dir()]
+        out_dir = exp / "output"
+        if not out_dir.exists():
+            print("  (no runs yet)")
+            continue
+        models = [m for m in out_dir.iterdir() if m.is_dir()]
         for m in sorted(models):
             print(f"  └── Model: {m.name}")
 
