@@ -87,8 +87,16 @@ class BaseEvaluator(object):
             row_res["model_name"] = row.model_name if "model_name" in row else None
             row_res["time_taken"] = row.time_taken if "time_taken" in row else None
             row_res["y_pred"] = self._get_pred(row_res["completion"])
-            row_res["y_gt"] = self._get_gt(row_res)
-            
+            try:
+                row_res["y_gt"] = self._get_gt(row_res)
+            except Exception as e:
+                print(f"Error in _get_gt for row {row_res.get('metadata', 'unknown')}: {e}")
+                row_res["y_gt"] = None
+                for k, v in self.default_result.items():
+                    row_res[k] = v
+                result.append(row_res)
+                continue
+
             # evaluate each row
             try:
                 row_eval = self._evaluate_one(row_res["y_gt"], row_res["y_pred"])
