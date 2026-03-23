@@ -20,7 +20,7 @@ dataset:
 
   seed: 42
   samples_per_task: 8
-  max_input_tokens: 7680
+  max_input_tokens: 5120
 
 permutation:
   shuffle_columns: true
