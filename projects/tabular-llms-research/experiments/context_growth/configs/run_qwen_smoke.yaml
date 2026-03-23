@@ -2,6 +2,7 @@ experiment:
   name: context_growth_smoke
   purpose: "Smoke test: verify context_growth pipeline works end-to-end"
   tags: [smoke, context-growth, 14b, decoder-only]
+  wandb: true
 
 data:
   artifact_path: ../artifacts/smoke.jsonl

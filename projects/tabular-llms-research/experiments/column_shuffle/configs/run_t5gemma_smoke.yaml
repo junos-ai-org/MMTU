@@ -2,6 +2,7 @@ experiment:
   name: column_shuffle_smoke
   purpose: "Smoke test: verify column_shuffle pipeline for T5Gemma"
   tags: [smoke, column-shuffle, 9b, encoder-decoder]
+  wandb: true
 
 data:
   artifact_path: ../artifacts/smoke.jsonl

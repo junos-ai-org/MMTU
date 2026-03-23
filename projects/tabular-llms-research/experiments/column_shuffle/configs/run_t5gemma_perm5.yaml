@@ -2,6 +2,7 @@ experiment:
   name: column_shuffle_perm5
   purpose: "T5Gemma-9B on column-shuffled data (permutation seed 5)"
   tags: [column-shuffle, 9b, encoder-decoder, perm5]
+  wandb: true
 
 data:
   artifact_path: ../artifacts/perm5.jsonl

@@ -2,6 +2,7 @@ experiment:
   name: column_shuffle_perm1
   purpose: "Qwen2.5-14B on column-shuffled data (permutation seed 1)"
   tags: [column-shuffle, 14b, decoder-only, perm1]
+  wandb: true
 
 data:
   artifact_path: ../artifacts/perm1.jsonl

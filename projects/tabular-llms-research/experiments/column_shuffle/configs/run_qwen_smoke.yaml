@@ -2,6 +2,7 @@ experiment:
   name: column_shuffle_smoke
   purpose: "Smoke test: verify column_shuffle pipeline for Qwen"
   tags: [smoke, column-shuffle, 14b, decoder-only]
+  wandb: true
 
 data:
   artifact_path: ../artifacts/smoke.jsonl

@@ -2,6 +2,7 @@ experiment:
   name: encoder_vs_decoder_baseline_smoke
   purpose: "Smoke test: verify Qwen2.5-14B pipeline works end-to-end"
   tags: [smoke, 14b, decoder-only]
+  wandb: true
 
 data:
   artifact_path: ../artifacts/smoke.jsonl

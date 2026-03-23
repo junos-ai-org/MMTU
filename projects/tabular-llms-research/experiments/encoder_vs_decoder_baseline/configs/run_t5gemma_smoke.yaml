@@ -2,6 +2,7 @@ experiment:
   name: encoder_vs_decoder_baseline_smoke
   purpose: "Smoke test: verify T5Gemma-9B pipeline works end-to-end"
   tags: [smoke, 9b, encoder-decoder]
+  wandb: true
 
 data:
   artifact_path: ../artifacts/smoke.jsonl

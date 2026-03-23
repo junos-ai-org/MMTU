@@ -2,6 +2,7 @@ experiment:
   name: context_growth_72k_96k
   purpose: "Measure Qwen2.5-14B accuracy on inputs in the 72k_96k token bucket"
   tags: [context-growth, 14b, decoder-only, 72k_96k]
+  wandb: true
 
 data:
   artifact_path: ../artifacts/bucket_72k_96k.jsonl
