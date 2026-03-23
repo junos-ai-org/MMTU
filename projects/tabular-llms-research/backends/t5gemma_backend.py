@@ -85,6 +85,7 @@ class T5GemmaBackend(InferenceBackend):
             return_tensors="pt",
             padding=True,
             truncation=True,
+            max_length=4095,
         )
         inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
 
