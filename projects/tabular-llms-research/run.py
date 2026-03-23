@@ -279,24 +279,39 @@ def run_experiment(config: dict, config_path: str, resume: bool | str = False, t
             # Log all scores together so W&B displays them cleanly in one summary row
             wandb.log(metrics_to_log)
 
-            # Log raw generation responses to W&B Table for visual debugging
+            # Log per-row predictions with scores to W&B Table
             print(f"  Uploading predictions table to W&B...")
             table = wandb.Table(columns=["Task", "Test Case", "Prompt", "Generation", "Score", "Metric"])
 
-            # Since analyze.py just ran, it dumped a parsed JSONL with "score" inline (or we can re-evaluate)
-            # To keep it simple, we upload the raw results
             try:
                 import pandas as pd
-                df = pd.read_json(result_file, lines=True)
-                for _, row in df.iterrows():
-                    meta = json.loads(row["metadata"])
+                scores_csv = result_file.with_suffix(".analysis.scores.csv")
+                result_df = pd.read_json(result_file, lines=True)
+                result_df["_task"] = result_df["metadata"].apply(lambda x: json.loads(x).get("task", ""))
+                result_df["_test_case"] = result_df["metadata"].apply(lambda x: json.loads(x).get("test_case", ""))
+
+                if scores_csv.exists():
+                    scores_df = pd.read_csv(scores_csv)
+                    merged = result_df.merge(
+                        scores_df[["task", "test_case", "score", "metric_type"]],
+                        left_on=["_task", "_test_case"],
+                        right_on=["task", "test_case"],
+                        how="left",
+                    )
+                else:
+                    merged = result_df
+                    merged["score"] = -1
+                    merged["metric_type"] = "unknown"
+
+                for _, row in merged.iterrows():
+                    prompt = row["prompt"]
                     table.add_data(
-                        meta.get("task", ""),
-                        meta.get("test_case", ""),
-                        row.get("prompt", "")[:2000] + "..." if len(row.get("prompt", "")) > 2000 else row.get("prompt", ""),
-                        row.get("response", "")[:1000],
-                        -1, # Actual parsed score is in analysis table
-                        "raw"
+                        row["_task"],
+                        row["_test_case"],
+                        prompt[:2000] + "..." if len(prompt) > 2000 else prompt,
+                        row["response"][:1000],
+                        float(row.get("score", -1)),
+                        row.get("metric_type", "unknown"),
                     )
                 wandb.log({"predictions": table})
             except Exception as e:

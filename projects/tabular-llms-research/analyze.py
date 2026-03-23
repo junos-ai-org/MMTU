@@ -246,6 +246,10 @@ def main():
     with open(json_path, "w") as f:
         json.dump(summary_data, f, indent=2)
 
+    # Export per-row scores for downstream consumers (e.g. W&B table)
+    scores_path = output_path.with_suffix(".scores.csv")
+    df.to_csv(scores_path, index=False)
+
     print(f"\nAnalysis written to: {output_path}")
     print(f"JSON summary written to: {json_path}")
     print(f"\n{'='*60}")

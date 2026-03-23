@@ -10,9 +10,10 @@ robustness to column/row permutations.
 
 ```
 projects/tabular-llms-research/
+├── run_experiment.sh            # Single command: build dataset + run inference
 ├── build_dataset.py            # Deterministic artifact generator
 ├── run.py                      # Entry point (run, evaluate, list)
-├── analyze.py                  # Post-run analysis
+├── analyze.py                  # Post-run analysis (+.scores.csv export)
 ├── compare.py                  # Side-by-side model comparison
 ├── table_permuter.py           # Used by build_dataset.py
 ├── backends/
@@ -44,16 +45,24 @@ projects/tabular-llms-research/
 To ensure fair comparison, models DO NOT sample datasets independently. We first generate a static deterministic dataset artifact, then run both models against it.
 Outputs are grouped by *experiment*, not by model, so you can easily compare runs. A registry row is also automatically appended to `experiments.md` upon completion.
 
-### Step 1: Generate Dataset Artifact
+### Quick start: run_experiment.sh
 ```bash
-# Build dataset for an experiment (paths resolve relative to config file)
+# Single command: builds dataset (if needed) + runs inference + evaluate + analyze
+./projects/tabular-llms-research/run_experiment.sh \
+    experiments/encoder_vs_decoder_baseline/configs/dataset.yaml \
+    experiments/encoder_vs_decoder_baseline/configs/run_qwen.yaml
+```
+
+### Manual steps (if you prefer)
+
+#### Step 1: Generate Dataset Artifact
+```bash
 python projects/tabular-llms-research/build_dataset.py \
     experiments/encoder_vs_decoder_baseline/configs/dataset.yaml
 ```
 
-### Step 2: Run Inference
+#### Step 2: Run Inference
 ```bash
-# Both models evaluate the exact same artifact
 # Note: Add `wandb: true` to the `experiment` block in your YAML to enable W&B.
 python projects/tabular-llms-research/run.py run \
     experiments/encoder_vs_decoder_baseline/configs/run_qwen.yaml
