@@ -4,7 +4,7 @@ set -euo pipefail
 # Run a full experiment: build dataset (if needed) + inference + evaluate + analyze.
 #
 # Usage:
-#   ./projects/tabular-llms-research/run_experiment.sh <dataset_config> <run_config>
+#   ./projects/tabular-llms-research/run_experiment.sh [--force-dataset-rebuild] <dataset_config> <run_config>
 #
 # Examples:
 #   ./projects/tabular-llms-research/run_experiment.sh \
@@ -20,13 +20,30 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+FORCE_DATASET=false
+
 usage() {
-    echo "Usage: $(basename "$0") <dataset_config> <run_config>"
+    echo "Usage: $(basename "$0") [--force-dataset-rebuild] <dataset_config> <run_config>"
     echo ""
-    echo "  dataset_config  Path to dataset YAML (relative to project dir or absolute)"
-    echo "  run_config      Path to run YAML (relative to project dir or absolute)"
+    echo "  --force-dataset-rebuild  Delete and rebuild the dataset artifact even if it exists"
+    echo "  dataset_config           Path to dataset YAML (relative to project dir or absolute)"
+    echo "  run_config               Path to run YAML (relative to project dir or absolute)"
     exit 1
 }
+
+# Parse flags
+while [[ $# -gt 0 && "$1" == --* ]]; do
+    case "$1" in
+        --force-dataset-rebuild)
+            FORCE_DATASET=true
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            usage
+            ;;
+    esac
+done
 
 if [ $# -ne 2 ]; then
     usage
@@ -74,7 +91,12 @@ echo "  Artifact:       ${ARTIFACT_PATH}"
 echo "============================================================"
 echo ""
 
-# Step 1: Build dataset (skip if artifact exists)
+# Step 1: Build dataset (skip if artifact exists, unless --force-dataset-rebuild)
+if [ "$FORCE_DATASET" = true ] && [ -f "$ARTIFACT_PATH" ]; then
+    echo "[1/2] --force-dataset-rebuild: removing existing artifact..."
+    rm "$ARTIFACT_PATH"
+fi
+
 if [ -f "$ARTIFACT_PATH" ]; then
     echo "[1/2] Dataset artifact already exists, skipping build."
     echo "      ${ARTIFACT_PATH}"
