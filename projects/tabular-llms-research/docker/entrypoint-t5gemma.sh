@@ -71,6 +71,9 @@ else
     git clone --depth 1 --branch "$MMTU_REF" "$MMTU_REPO" /workspace/MMTU || warn "Git clone failed — SSH in to debug. Container will stay alive."
 fi
 
+# --depth/--single-branch restricts fetch to the cloned branch; restore full fetch
+(cd /workspace/MMTU && git config --replace-all remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*") 2>/dev/null || true
+
 # --- Model weights --------------------------------------------------------------
 export HF_HOME="/workspace/.cache/huggingface"
 
