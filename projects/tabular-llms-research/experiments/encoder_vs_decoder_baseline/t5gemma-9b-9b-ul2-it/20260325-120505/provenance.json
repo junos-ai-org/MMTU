@@ -1,0 +1,8 @@
+{
+  "experiment_name": "encoder_vs_decoder_baseline_large",
+  "model_alias": "t5gemma-9b-9b-ul2-it",
+  "git_sha": "2c6a160",
+  "timestamp": "2026-03-25T12:05:05.440840+00:00",
+  "config_path": "experiments/encoder_vs_decoder_baseline/configs/run_t5gemma_large.yaml",
+  "data_artifact": "../artifacts/dataset_large.jsonl"
+}
