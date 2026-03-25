@@ -1,0 +1,8 @@
+{
+  "experiment_name": "encoder_vs_decoder_baseline_large",
+  "model_alias": "Qwen2.5-14B-Instruct",
+  "git_sha": "2c6a160",
+  "timestamp": "2026-03-25T13:04:23.473235+00:00",
+  "config_path": "experiments/encoder_vs_decoder_baseline/configs/run_qwen_large.yaml",
+  "data_artifact": "../artifacts/dataset_large.jsonl"
+}
