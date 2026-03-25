@@ -1,0 +1,99 @@
+{
+  "experiment": "encoder_vs_decoder_baseline_large",
+  "result_file": "encoder_vs_decoder_baseline_large.Qwen2.5-14B-Instruct.result.jsonl",
+  "samples": 861,
+  "overall_score": 0.555082341274647,
+  "tasks": {
+    "Cell-entity-annotation": {
+      "metric": "acc",
+      "samples": 67,
+      "score": 0.5223880597014925,
+      "perfect": 35,
+      "zero": 32
+    },
+    "Column-type-annotation": {
+      "metric": "acc",
+      "samples": 67,
+      "score": 0.19402985074626866,
+      "perfect": 13,
+      "zero": 54
+    },
+    "Data-Imputation": {
+      "metric": "acc",
+      "samples": 69,
+      "score": 0.2898550724637681,
+      "perfect": 20,
+      "zero": 49
+    },
+    "Entity-Matching": {
+      "metric": "acc",
+      "samples": 73,
+      "score": 0.958904109589041,
+      "perfect": 70,
+      "zero": 3
+    },
+    "Functional-Dependency": {
+      "metric": "f1",
+      "samples": 49,
+      "score": 0.6896148069617457,
+      "perfect": 22,
+      "zero": 10
+    },
+    "List-to-table": {
+      "metric": "acc",
+      "samples": 67,
+      "score": 0.31343283582089554,
+      "perfect": 21,
+      "zero": 46
+    },
+    "Schema-Matching": {
+      "metric": "f1",
+      "samples": 67,
+      "score": 0.7908512251724149,
+      "perfect": 23,
+      "zero": 1
+    },
+    "Table-Fact-Verification": {
+      "metric": "acc",
+      "samples": 67,
+      "score": 0.8656716417910447,
+      "perfect": 58,
+      "zero": 9
+    },
+    "Table-QA": {
+      "metric": "acc",
+      "samples": 67,
+      "score": 0.5373134328358209,
+      "perfect": 36,
+      "zero": 31
+    },
+    "equi-join-detect": {
+      "metric": "f1",
+      "samples": 67,
+      "score": 0.6474331544903608,
+      "perfect": 10,
+      "zero": 12
+    },
+    "header-value-matching": {
+      "metric": "acc",
+      "samples": 67,
+      "score": 0.5185993024170557,
+      "perfect": 17,
+      "zero": 6
+    },
+    "semantic-join": {
+      "metric": "f1",
+      "samples": 67,
+      "score": 0.3339752443996204,
+      "perfect": 5,
+      "zero": 31
+    },
+    "semantic-transform": {
+      "metric": "acc",
+      "samples": 67,
+      "score": 0.561898839137645,
+      "perfect": 17,
+      "zero": 13
+    }
+  }
+}
