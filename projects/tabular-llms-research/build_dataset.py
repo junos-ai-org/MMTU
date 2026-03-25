@@ -55,11 +55,6 @@ def build_dataset(config: dict, output_path: str, config_path: str | None = None
     ds = load_dataset(dataset_cfg["name"], split=dataset_cfg["split"])
     records = [{"prompt": row["prompt"], "metadata": row["metadata"]} for row in ds]
 
-    mmtu_root = _get_mmtu_root()
-    if str(mmtu_root) not in sys.path:
-        sys.path.insert(0, str(mmtu_root))
-    from utils.count_token import count_tokens_mp
-
     # Filter to requested tasks and markdown only
     task_set = set(tasks)
     task_records = []
@@ -70,9 +65,13 @@ def build_dataset(config: dict, output_path: str, config_path: str | None = None
 
     print(f"Filtered to {len(task_records)} markdown records across {len(tasks)} tasks.")
 
-    # Token count
+    # Token count (use model-specific tokenizer when configured)
+    from token_counter import count_tokens
+
+    tokenizer_name = dataset_cfg.get("tokenizer", "gpt-4o")
     prompts = [r["prompt"] for _, r in task_records]
-    token_counts = count_tokens_mp(prompts)
+    token_counts = count_tokens(prompts, tokenizer=tokenizer_name)
+    print(f"Counted tokens using tokenizer: {tokenizer_name}")
 
     by_task = {t: [] for t in tasks}
     for (task, rec), tc in zip(task_records, token_counts):

@@ -27,6 +27,7 @@ class T5GemmaBackend(InferenceBackend):
         model_path = model_cfg["model_path"]
         dtype = getattr(torch, model_cfg.get("dtype", "bfloat16"))
         self.max_new_tokens = inference_cfg.get("max_output_tokens", 512)
+        self.max_input_length = inference_cfg.get("max_input_tokens", 4096)
         self.temperature = inference_cfg.get("temperature", 0.0)
 
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -56,8 +57,8 @@ class T5GemmaBackend(InferenceBackend):
         print("  Applying torch.compile...")
         self.model = torch.compile(self.model)
 
-        print(f"  T5Gemma ready on {self.device}. max_new_tokens={self.max_new_tokens}"
-              f" ({attn_impl} + torch.compile)")
+        print(f"  T5Gemma ready on {self.device}. max_input_length={self.max_input_length}, "
+              f"max_new_tokens={self.max_new_tokens} ({attn_impl} + torch.compile)")
 
     def generate(self, prompt: str) -> str:
         return self.generate_batch([prompt])[0]
@@ -85,7 +86,7 @@ class T5GemmaBackend(InferenceBackend):
             return_tensors="pt",
             padding=True,
             truncation=True,
-            max_length=8192,
+            max_length=self.max_input_length,
         )
         inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
 
