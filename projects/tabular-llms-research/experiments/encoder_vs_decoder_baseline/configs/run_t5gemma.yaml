@@ -5,7 +5,7 @@ experiment:
   wandb: true
 
 data:
-  artifact_path: ../artifacts/baseline.jsonl
+  artifact_path: ../artifacts/dataset_large.jsonl
 
 model:
   backend: t5gemma

@@ -28,4 +28,4 @@ permutation:
   shuffle_rows: false
 
 output:
-  artifact_path: ../artifacts/baseline.jsonl
+  artifact_path: ../artifacts/dataset_large.jsonl
