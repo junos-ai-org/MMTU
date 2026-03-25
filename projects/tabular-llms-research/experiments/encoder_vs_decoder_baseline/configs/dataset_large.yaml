@@ -19,7 +19,7 @@ dataset:
     - equi-join-detect
 
   seed: 42
-  samples_per_task: 8
+  samples_per_task: 67
   tokenizer: google/t5gemma-9b-9b-ul2-it
   max_input_tokens: 4000
 
@@ -28,4 +28,4 @@ permutation:
   shuffle_rows: false
 
 output:
-  artifact_path: ../artifacts/baseline.jsonl
+  artifact_path: ../artifacts/dataset_large.jsonl

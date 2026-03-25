@@ -1,11 +1,11 @@
 experiment:
-  name: encoder_vs_decoder_baseline
-  purpose: "Baseline comparison of Qwen2.5-14B (decoder) vs T5Gemma-9B (enc-dec) on MMTU"
-  tags: [baseline, 9b, encoder-decoder]
+  name: encoder_vs_decoder_baseline_large
+  purpose: "Large-scale baseline: T5Gemma-9B (enc-dec) on 1005 MMTU samples"
+  tags: [baseline, 9b, encoder-decoder, large]
   wandb: true
 
 data:
-  artifact_path: ../artifacts/baseline.jsonl
+  artifact_path: ../artifacts/dataset_large.jsonl
 
 model:
   backend: t5gemma
