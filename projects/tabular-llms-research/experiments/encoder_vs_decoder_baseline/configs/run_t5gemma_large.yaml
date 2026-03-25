@@ -1,0 +1,20 @@
+experiment:
+  name: encoder_vs_decoder_baseline_large
+  purpose: "Large-scale baseline: T5Gemma-9B (enc-dec) on 1005 MMTU samples"
+  tags: [baseline, 9b, encoder-decoder, large]
+  wandb: true
+
+data:
+  artifact_path: ../artifacts/dataset_large.jsonl
+
+model:
+  backend: t5gemma
+  model_path: google/t5gemma-9b-9b-ul2-it
+  alias: t5gemma-9b-9b-ul2-it
+  dtype: bfloat16
+
+inference:
+  max_input_tokens: 4096
+  max_output_tokens: 512
+  temperature: 0.0
+  batch_size: 16
