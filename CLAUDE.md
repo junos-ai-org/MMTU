@@ -110,13 +110,27 @@ When creating a new project, set up the following structure:
 projects/<project-name>/
 ├── CLAUDE.md              # Goal, status, architecture decisions
 ├── experiments.md         # Chronological experiment log
-├── configs/               # YAML experiment configs
+├── build_dataset.py       # Deterministic dataset artifact generator
+├── run.py                 # Experiment runner (run, evaluate, list)
+├── run_experiment.sh      # Single command: build + run + evaluate + analyze
+├── analyze.py             # Post-run analysis (per-task metrics, markdown reports)
+├── compare.py             # Side-by-side model comparison
 ├── backends/              # Model backend implementations
+│   ├── base.py            # Abstract InferenceBackend class
+│   └── <model>_backend.py # One backend per model/framework
 ├── docker/
 │   ├── Dockerfile.<backend>   # One Dockerfile per backend/model to avoid dependency conflicts
 │   ├── entrypoint-<backend>.sh
 │   └── build.sh           # Script to build all Docker images for the project
-└── run.py                 # Experiment runner
+├── experiments/           # Each experiment is self-contained
+│   └── <experiment-name>/
+│       ├── configs/       # dataset.yaml + run_<model>.yaml
+│       ├── artifacts/     # Generated JSONL datasets (deterministic)
+│       └── output/        # Model outputs grouped by model/run-timestamp
+│           └── <model-alias>/
+│               ├── latest → <run-key>/  # Symlink to most recent run
+│               └── <YYYYMMDD-HHMMSS>/   # Frozen config, provenance, results, analysis
+└── tests/                 # Unit tests (mocked, no GPU/network required)
 ```
 
 Key rules:
