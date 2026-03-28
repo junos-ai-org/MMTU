@@ -1,0 +1,296 @@
+[
+  {
+    "test_case": "case_104",
+    "qwen_score": 0.5,
+    "t5gemma_score": 0.667,
+    "delta": -0.167
+  },
+  {
+    "test_case": "case_105",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.8,
+    "delta": 0.2
+  },
+  {
+    "test_case": "case_111",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.5,
+    "delta": 0.5
+  },
+  {
+    "test_case": "case_118",
+    "qwen_score": 0.727,
+    "t5gemma_score": 0.727,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_122",
+    "qwen_score": 0.8,
+    "t5gemma_score": 0.571,
+    "delta": 0.229
+  },
+  {
+    "test_case": "case_125",
+    "qwen_score": 0.333,
+    "t5gemma_score": 0.0,
+    "delta": 0.333
+  },
+  {
+    "test_case": "case_136",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_142",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.5,
+    "delta": 0.5
+  },
+  {
+    "test_case": "case_148",
+    "qwen_score": 0.8,
+    "t5gemma_score": 1.0,
+    "delta": -0.2
+  },
+  {
+    "test_case": "case_17",
+    "qwen_score": 0.8,
+    "t5gemma_score": 0.8,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_180",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.8,
+    "delta": 0.2
+  },
+  {
+    "test_case": "case_182",
+    "qwen_score": 0.8,
+    "t5gemma_score": 0.8,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_183",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.0,
+    "delta": 1.0
+  },
+  {
+    "test_case": "case_187",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.857,
+    "delta": 0.143
+  },
+  {
+    "test_case": "case_188",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_192",
+    "qwen_score": 0.667,
+    "t5gemma_score": 0.0,
+    "delta": 0.667
+  },
+  {
+    "test_case": "case_20",
+    "qwen_score": 0.8,
+    "t5gemma_score": 0.8,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_208",
+    "qwen_score": 1.0,
+    "t5gemma_score": 1.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_214",
+    "qwen_score": 0.909,
+    "t5gemma_score": 1.0,
+    "delta": -0.091
+  },
+  {
+    "test_case": "case_218",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.0,
+    "delta": 1.0
+  },
+  {
+    "test_case": "case_220",
+    "qwen_score": 0.667,
+    "t5gemma_score": 0.0,
+    "delta": 0.667
+  },
+  {
+    "test_case": "case_227",
+    "qwen_score": 0.8,
+    "t5gemma_score": 0.8,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_240",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_251",
+    "qwen_score": 1.0,
+    "t5gemma_score": 1.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_252",
+    "qwen_score": 0.8,
+    "t5gemma_score": 0.0,
+    "delta": 0.8
+  },
+  {
+    "test_case": "case_255",
+    "qwen_score": 1.0,
+    "t5gemma_score": 1.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_275",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.0,
+    "delta": 1.0
+  },
+  {
+    "test_case": "case_277",
+    "qwen_score": 0.5,
+    "t5gemma_score": 0.4,
+    "delta": 0.1
+  },
+  {
+    "test_case": "case_291",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.0,
+    "delta": 1.0
+  },
+  {
+    "test_case": "case_300",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.5,
+    "delta": 0.5
+  },
+  {
+    "test_case": "case_302",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_314",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.0,
+    "delta": 1.0
+  },
+  {
+    "test_case": "case_316",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_335",
+    "qwen_score": 1.0,
+    "t5gemma_score": 1.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_338",
+    "qwen_score": 0.5,
+    "t5gemma_score": 0.0,
+    "delta": 0.5
+  },
+  {
+    "test_case": "case_372",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.0,
+    "delta": 1.0
+  },
+  {
+    "test_case": "case_40",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.8,
+    "delta": 0.2
+  },
+  {
+    "test_case": "case_42",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_49",
+    "qwen_score": 1.0,
+    "t5gemma_score": 1.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_57",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_67",
+    "qwen_score": 0.5,
+    "t5gemma_score": 0.8,
+    "delta": -0.3
+  },
+  {
+    "test_case": "case_69",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_7",
+    "qwen_score": 0.667,
+    "t5gemma_score": 0.0,
+    "delta": 0.667
+  },
+  {
+    "test_case": "case_70",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.0,
+    "delta": 1.0
+  },
+  {
+    "test_case": "case_80",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.667,
+    "delta": 0.333
+  },
+  {
+    "test_case": "case_81",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.8,
+    "delta": 0.2
+  },
+  {
+    "test_case": "case_86",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_87",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.8,
+    "delta": 0.2
+  },
+  {
+    "test_case": "case_9",
+    "qwen_score": 0.75,
+    "t5gemma_score": 0.667,
+    "delta": 0.083
+  }
+]

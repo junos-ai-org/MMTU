@@ -1,0 +1,404 @@
+[
+  {
+    "test_case": "103241775",
+    "qwen_score": 0.857,
+    "t5gemma_score": 0.0,
+    "delta": 0.857
+  },
+  {
+    "test_case": "104105402",
+    "qwen_score": 0.8,
+    "t5gemma_score": 1.0,
+    "delta": -0.2
+  },
+  {
+    "test_case": "109252390",
+    "qwen_score": 0.857,
+    "t5gemma_score": 0.0,
+    "delta": 0.857
+  },
+  {
+    "test_case": "111506936",
+    "qwen_score": 0.333,
+    "t5gemma_score": 0.333,
+    "delta": 0.0
+  },
+  {
+    "test_case": "118684480",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "120970748",
+    "qwen_score": 0.857,
+    "t5gemma_score": 0.0,
+    "delta": 0.857
+  },
+  {
+    "test_case": "121068782",
+    "qwen_score": 0.667,
+    "t5gemma_score": 0.857,
+    "delta": -0.19
+  },
+  {
+    "test_case": "146627235",
+    "qwen_score": 0.909,
+    "t5gemma_score": 0.909,
+    "delta": 0.0
+  },
+  {
+    "test_case": "149605362",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "150579102",
+    "qwen_score": 0.8,
+    "t5gemma_score": 1.0,
+    "delta": -0.2
+  },
+  {
+    "test_case": "150817276",
+    "qwen_score": 0.286,
+    "t5gemma_score": 0.667,
+    "delta": -0.381
+  },
+  {
+    "test_case": "154870485",
+    "qwen_score": 0.857,
+    "t5gemma_score": 0.857,
+    "delta": 0.0
+  },
+  {
+    "test_case": "167653595",
+    "qwen_score": 0.933,
+    "t5gemma_score": 1.0,
+    "delta": -0.067
+  },
+  {
+    "test_case": "173341254",
+    "qwen_score": 0.5,
+    "t5gemma_score": 1.0,
+    "delta": -0.5
+  },
+  {
+    "test_case": "175938275",
+    "qwen_score": 0.75,
+    "t5gemma_score": 1.0,
+    "delta": -0.25
+  },
+  {
+    "test_case": "186644222",
+    "qwen_score": 0.727,
+    "t5gemma_score": 0.0,
+    "delta": 0.727
+  },
+  {
+    "test_case": "202763962",
+    "qwen_score": 0.857,
+    "t5gemma_score": 0.5,
+    "delta": 0.357
+  },
+  {
+    "test_case": "203858726",
+    "qwen_score": 1.0,
+    "t5gemma_score": 1.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "208829205",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.125,
+    "delta": 0.875
+  },
+  {
+    "test_case": "214408136",
+    "qwen_score": 0.8,
+    "t5gemma_score": 0.0,
+    "delta": 0.8
+  },
+  {
+    "test_case": "216359887",
+    "qwen_score": 0.889,
+    "t5gemma_score": 0.75,
+    "delta": 0.139
+  },
+  {
+    "test_case": "224396057",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "225218896",
+    "qwen_score": 0.8,
+    "t5gemma_score": 0.8,
+    "delta": 0.0
+  },
+  {
+    "test_case": "228684154",
+    "qwen_score": 0.875,
+    "t5gemma_score": 0.706,
+    "delta": 0.169
+  },
+  {
+    "test_case": "232496394",
+    "qwen_score": 0.833,
+    "t5gemma_score": 0.714,
+    "delta": 0.119
+  },
+  {
+    "test_case": "233833644",
+    "qwen_score": 0.933,
+    "t5gemma_score": 1.0,
+    "delta": -0.067
+  },
+  {
+    "test_case": "235479503",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.667,
+    "delta": -0.667
+  },
+  {
+    "test_case": "236576789",
+    "qwen_score": 0.875,
+    "t5gemma_score": 0.706,
+    "delta": 0.169
+  },
+  {
+    "test_case": "242856579",
+    "qwen_score": 0.909,
+    "t5gemma_score": 0.0,
+    "delta": 0.909
+  },
+  {
+    "test_case": "248054036",
+    "qwen_score": 1.0,
+    "t5gemma_score": 1.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "249390599",
+    "qwen_score": 0.8,
+    "t5gemma_score": 1.0,
+    "delta": -0.2
+  },
+  {
+    "test_case": "251441844",
+    "qwen_score": 0.8,
+    "t5gemma_score": 0.8,
+    "delta": 0.0
+  },
+  {
+    "test_case": "258387030",
+    "qwen_score": 0.533,
+    "t5gemma_score": 0.0,
+    "delta": 0.533
+  },
+  {
+    "test_case": "262221646",
+    "qwen_score": 0.8,
+    "t5gemma_score": 0.8,
+    "delta": 0.0
+  },
+  {
+    "test_case": "265123283",
+    "qwen_score": 0.167,
+    "t5gemma_score": 0.0,
+    "delta": 0.167
+  },
+  {
+    "test_case": "266641964",
+    "qwen_score": 0.941,
+    "t5gemma_score": 0.824,
+    "delta": 0.117
+  },
+  {
+    "test_case": "268217299",
+    "qwen_score": 0.444,
+    "t5gemma_score": 0.0,
+    "delta": 0.444
+  },
+  {
+    "test_case": "271211506",
+    "qwen_score": 0.875,
+    "t5gemma_score": 0.706,
+    "delta": 0.169
+  },
+  {
+    "test_case": "275406048",
+    "qwen_score": 0.222,
+    "t5gemma_score": 0.0,
+    "delta": 0.222
+  },
+  {
+    "test_case": "279073330",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.0,
+    "delta": 1.0
+  },
+  {
+    "test_case": "283869981",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "284803468",
+    "qwen_score": 0.933,
+    "t5gemma_score": 1.0,
+    "delta": -0.067
+  },
+  {
+    "test_case": "290778641",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.889,
+    "delta": 0.111
+  },
+  {
+    "test_case": "291574773",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "294822798",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "296479090",
+    "qwen_score": 1.0,
+    "t5gemma_score": 1.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "310277070",
+    "qwen_score": 1.0,
+    "t5gemma_score": 1.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "316762928",
+    "qwen_score": 0.75,
+    "t5gemma_score": 0.571,
+    "delta": 0.179
+  },
+  {
+    "test_case": "327904659",
+    "qwen_score": 0.857,
+    "t5gemma_score": 1.0,
+    "delta": -0.143
+  },
+  {
+    "test_case": "328869156",
+    "qwen_score": 0.769,
+    "t5gemma_score": 0.857,
+    "delta": -0.088
+  },
+  {
+    "test_case": "330084473",
+    "qwen_score": 0.875,
+    "t5gemma_score": 0.706,
+    "delta": 0.169
+  },
+  {
+    "test_case": "332182110",
+    "qwen_score": 0.75,
+    "t5gemma_score": 0.0,
+    "delta": 0.75
+  },
+  {
+    "test_case": "334636740",
+    "qwen_score": 0.571,
+    "t5gemma_score": 0.286,
+    "delta": 0.285
+  },
+  {
+    "test_case": "337973596",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "437797820",
+    "qwen_score": 0.667,
+    "t5gemma_score": 0.0,
+    "delta": 0.667
+  },
+  {
+    "test_case": "650213554",
+    "qwen_score": 0.737,
+    "t5gemma_score": 0.143,
+    "delta": 0.594
+  },
+  {
+    "test_case": "654992181",
+    "qwen_score": 0.2,
+    "t5gemma_score": 0.222,
+    "delta": -0.022
+  },
+  {
+    "test_case": "655206294",
+    "qwen_score": 0.875,
+    "t5gemma_score": 0.75,
+    "delta": 0.125
+  },
+  {
+    "test_case": "764904989",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.8,
+    "delta": 0.2
+  },
+  {
+    "test_case": "835809873",
+    "qwen_score": 0.857,
+    "t5gemma_score": 0.0,
+    "delta": 0.857
+  },
+  {
+    "test_case": "877661484",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "890293336",
+    "qwen_score": 1.0,
+    "t5gemma_score": 1.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "903331759",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "908410285",
+    "qwen_score": 0.75,
+    "t5gemma_score": 0.25,
+    "delta": 0.5
+  },
+  {
+    "test_case": "939121682",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.0,
+    "delta": 1.0
+  },
+  {
+    "test_case": "943638440",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "948193615",
+    "qwen_score": 0.857,
+    "t5gemma_score": 0.857,
+    "delta": 0.0
+  }
+]

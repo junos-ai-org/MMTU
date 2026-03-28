@@ -1,0 +1,404 @@
+[
+  {
+    "test_case": "case_10",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.0,
+    "delta": 1.0
+  },
+  {
+    "test_case": "case_1006",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_1054",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_1085",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_1105",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_1121",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_1178",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_1198",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_12",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_1303",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_1323",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_1333",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_1355",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_1356",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.0,
+    "delta": 1.0
+  },
+  {
+    "test_case": "case_1364",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_1373",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_1419",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_1464",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_1480",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_1538",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_1556",
+    "qwen_score": 1.0,
+    "t5gemma_score": 1.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_1614",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_1633",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_1641",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_1669",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_1678",
+    "qwen_score": 1.0,
+    "t5gemma_score": 1.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_1708",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_198",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_226",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_231",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_238",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_266",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_291",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_30",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_306",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_31",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_348",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_405",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.0,
+    "delta": 1.0
+  },
+  {
+    "test_case": "case_43",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_483",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_490",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_527",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_532",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_536",
+    "qwen_score": 1.0,
+    "t5gemma_score": 1.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_56",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_566",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_582",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_594",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_622",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_636",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_644",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_669",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_678",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_695",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.0,
+    "delta": 1.0
+  },
+  {
+    "test_case": "case_754",
+    "qwen_score": 1.0,
+    "t5gemma_score": 1.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_774",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_78",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.0,
+    "delta": 1.0
+  },
+  {
+    "test_case": "case_782",
+    "qwen_score": 0.0,
+    "t5gemma_score": 1.0,
+    "delta": -1.0
+  },
+  {
+    "test_case": "case_788",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_811",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.0,
+    "delta": 1.0
+  },
+  {
+    "test_case": "case_816",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.0,
+    "delta": 1.0
+  },
+  {
+    "test_case": "case_819",
+    "qwen_score": 1.0,
+    "t5gemma_score": 0.0,
+    "delta": 1.0
+  },
+  {
+    "test_case": "case_824",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_829",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_858",
+    "qwen_score": 1.0,
+    "t5gemma_score": 1.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_941",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  },
+  {
+    "test_case": "case_943",
+    "qwen_score": 0.0,
+    "t5gemma_score": 0.0,
+    "delta": 0.0
+  }
+]
