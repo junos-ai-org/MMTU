@@ -363,7 +363,7 @@ def main():
         for f in md_files:
             if f != synthesis:
                 ordered.append(f)
-        combined_path = report_dir / "task_analysis_combined.docx"
+        combined_path = report_dir / "task_analysis_full.docx"
         create_combined_docx(ordered, combined_path)
 
 
