@@ -9,15 +9,14 @@ from __future__ import annotations
 import functools
 from multiprocessing import cpu_count
 
-import tiktoken
-
 
 # ---------------------------------------------------------------------------
 # Tokenizer caching
 # ---------------------------------------------------------------------------
 
 @functools.lru_cache(maxsize=8)
-def _get_tiktoken_encoder(model: str) -> tiktoken.Encoding:
+def _get_tiktoken_encoder(model: str) -> 'tiktoken.Encoding':
+    import tiktoken
     return tiktoken.encoding_for_model(model)
 
 
@@ -31,9 +30,10 @@ def _get_hf_tokenizer(model_id: str):
 def _is_tiktoken_model(name: str) -> bool:
     """Return True if *name* can be resolved by tiktoken."""
     try:
+        import tiktoken
         tiktoken.encoding_for_model(name)
         return True
-    except KeyError:
+    except (KeyError, ImportError):
         return False
 
 
