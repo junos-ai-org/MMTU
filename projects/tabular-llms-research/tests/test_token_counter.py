@@ -47,8 +47,16 @@ class TestTiktokenPath:
 
     def test_is_tiktoken_model_known(self):
         # These should not need network; they just check tiktoken's model map
+        # Skip if tiktoken is not installed
+        pytest.importorskip("tiktoken")
         assert _is_tiktoken_model("google/t5gemma-9b-9b-ul2-it") is False
         assert _is_tiktoken_model("not-a-real-model") is False
+
+    @patch.dict('sys.modules', {'tiktoken': None})
+    def test_is_tiktoken_model_no_tiktoken(self):
+        # Simulate ImportError when tiktoken is not installed
+        assert _is_tiktoken_model("gpt-4o") is False
+        assert _is_tiktoken_model("google/t5gemma-9b-9b-ul2-it") is False
 
 
 # ---------------------------------------------------------------------------
