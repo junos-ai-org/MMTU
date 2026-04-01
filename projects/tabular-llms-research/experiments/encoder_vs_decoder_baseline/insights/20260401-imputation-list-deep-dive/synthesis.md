@@ -28,7 +28,7 @@
 
 ### Failure Mode Counts
 
-| Failure Mode | Both Wrong | T5Gemma Only | Qwen Only | Both Correct | Total |
+| Failure Mode | Both Wrong | T5Gemma Wins | Qwen Wins | Both Correct | Total |
 |---|---|---|---|---|---|
 | hallucination | 30 | 2 | 1 | 0 | 33 |
 | reasoning_error | 24 | 1 | 0 | 0 | 25 |
@@ -106,7 +106,7 @@ All 18 both_correct cases are trivially solvable — sequential episode numbers,
 
 ### Failure Mode Counts
 
-| Failure Mode | Both Wrong | T5Gemma Only | Qwen Only | Both Correct | Total |
+| Failure Mode | Both Wrong | T5Gemma Wins | Qwen Wins | Both Correct | Total |
 |---|---|---|---|---|---|
 | structural_error | 32 | 9 | 4 | 0 | 45 |
 | wrong_column | 26 | 9 | 4 | 0 | 39 |
