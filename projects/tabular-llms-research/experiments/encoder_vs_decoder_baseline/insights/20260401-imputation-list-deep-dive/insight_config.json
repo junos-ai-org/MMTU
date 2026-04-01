@@ -1,0 +1,27 @@
+{
+  "name": "imputation-list-deep-dive",
+  "created": "2026-04-01",
+  "objective": "Understand at a deeper level how Qwen2.5-14B and T5Gemma-9B perform on Data-Imputation and List-to-table by analyzing every question pair with LLM-assisted reasoning",
+  "runs": [
+    {
+      "model": "Qwen2.5-14B-Instruct",
+      "path": "output/Qwen2.5-14B-Instruct/20260325-124613",
+      "alias": "qwen"
+    },
+    {
+      "model": "t5gemma-9b-9b-ul2-it",
+      "path": "output/t5gemma-9b-9b-ul2-it/20260325-120505",
+      "alias": "t5gemma"
+    }
+  ],
+  "filters": {
+    "tasks": ["Data-Imputation", "List-to-table"],
+    "samples": "all within filtered tasks (67 per task, 134 total)"
+  },
+  "method": {
+    "analyzer": "claude-sonnet-4-6 via subagents",
+    "per_question": true,
+    "output": "analyzed_pairs.jsonl"
+  },
+  "tags": ["encoder-vs-decoder", "error-analysis", "data-imputation", "list-to-table"]
+}
