@@ -126,10 +126,15 @@ projects/<project-name>/
 │   └── <experiment-name>/
 │       ├── configs/       # dataset.yaml + run_<model>.yaml
 │       ├── artifacts/     # Generated JSONL datasets (deterministic)
-│       └── output/        # Model outputs grouped by model/run-timestamp
-│           └── <model-alias>/
-│               ├── latest → <run-key>/  # Symlink to most recent run
-│               └── <YYYYMMDD-HHMMSS>/   # Frozen config, provenance, results, analysis
+│       ├── output/        # Model outputs grouped by model/run-timestamp
+│       │   └── <model-alias>/
+│       │       ├── latest → <run-key>/  # Symlink to most recent run
+│       │       └── <YYYYMMDD-HHMMSS>/   # Frozen config, provenance, results, analysis
+│       └── insights/      # Human/AI-driven investigations
+│           └── <YYYYMMDD-description>/
+│               ├── insight_config.json  # Objective, run references, filters, tags
+│               ├── synthesis.md         # Cross-cutting findings
+│               └── <task-name>/         # Per-task deep dives (reports, scores, data)
 └── tests/                 # Unit tests (mocked, no GPU/network required)
 ```
 
@@ -142,6 +147,7 @@ Key rules:
 - **Project** — a research effort (e.g. `tabular-llms-research`). Has its own `CLAUDE.md`, `experiments.md`, backends, configs, and Docker setup.
 - **Experiment** — a named comparison across models using the same data artifact (e.g. `encoder_vs_decoder_baseline`). Defined in run config YAML. Results logged to `experiments.md`.
 - **Run** — a single model execution within an experiment, identified by a timestamped run key (`YYYYMMDD-HHMMSS`). Each run directory contains frozen config, provenance JSON, result JSONL, and analysis output.
+- **Insight** — a human/AI-driven investigation scoped to an experiment (e.g. `20260326-task-deep-dive`). Lives in `insights/<YYYYMMDD-description>/` with an `insight_config.json` tracking objective, run references, filters, and tags. Distinct from automated `analysis/` output produced by `run.py`.
 
 ### Experiment Workflow
 

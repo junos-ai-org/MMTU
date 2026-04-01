@@ -29,7 +29,8 @@ projects/tabular-llms-research/
     ├── encoder_vs_decoder_baseline/
     │   ├── configs/            # dataset.yaml, run_qwen.yaml, etc.
     │   ├── artifacts/          # Generated JSONL datasets
-    │   └── output/             # Model outputs per run
+    │   ├── output/             # Model outputs per run
+    │   └── insights/           # Human/AI-driven investigations (see below)
     ├── context_growth/         # Qwen accuracy vs input token length
     │   ├── configs/            # 5 bucket datasets + qwen runs + smoke
     │   ├── artifacts/
@@ -76,6 +77,17 @@ python projects/tabular-llms-research/compare.py \
     experiments/encoder_vs_decoder_baseline/output/Qwen2.5-14B-Instruct/latest \
     experiments/encoder_vs_decoder_baseline/output/t5gemma-9b-9b-ul2-it/latest
 ```
+
+## Insights
+
+Each experiment can have an `insights/` directory for human/AI-driven investigations.
+Unlike the automated `analysis/` output from `run.py`, insights are ad-hoc deep dives
+into specific questions (e.g. "why does model X win on task Y?").
+
+Structure: `insights/<YYYYMMDD-description>/` with:
+- `insight_config.json` — objective, run references (relative paths), filters, tags
+- `synthesis.md` — cross-cutting findings
+- Per-task subdirectories with reports, paired scores, and filtered data extracts
 
 ## Experiments
 
