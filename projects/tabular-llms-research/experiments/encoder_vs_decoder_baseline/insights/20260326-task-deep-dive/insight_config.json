@@ -1,0 +1,27 @@
+{
+  "name": "task-deep-dive",
+  "created": "2026-03-26",
+  "objective": "Understand why each model wins on the 4 most divergent tasks by examining individual examples, scoring artifacts, and format failures",
+  "runs": [
+    {
+      "model": "Qwen2.5-14B-Instruct",
+      "path": "output/Qwen2.5-14B-Instruct/20260325-124613",
+      "alias": "qwen"
+    },
+    {
+      "model": "t5gemma-9b-9b-ul2-it",
+      "path": "output/t5gemma-9b-9b-ul2-it/20260325-120505",
+      "alias": "t5gemma"
+    }
+  ],
+  "filters": {
+    "tasks": [
+      "Functional-Dependency",
+      "Table-QA",
+      "equi-join-detect",
+      "Column-type-annotation"
+    ],
+    "samples": "all within filtered tasks (67 per task, ~250 total)"
+  },
+  "tags": ["encoder-vs-decoder", "error-analysis", "evaluator-artifacts"]
+}
