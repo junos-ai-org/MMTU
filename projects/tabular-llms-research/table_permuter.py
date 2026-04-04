@@ -115,19 +115,22 @@ def _permute_table_block(
             sep_idx = i
             break
 
-    if sep_idx is None:
-        return block_lines  # Can't parse, return unchanged
+    if sep_idx is None or sep_idx == 0:
+        return block_lines  # Can't parse or malformed (no header), return unchanged
 
     # Parse header (lines before separator), separator, and data rows
     header_cells = _parse_row(block_lines[sep_idx - 1])
     sep_cells = _parse_row(block_lines[sep_idx])
+
+    n_cols = len(header_cells)
+    if len(sep_cells) < n_cols:
+        return block_lines  # Malformed (separator has fewer columns than header), return unchanged
+
     alignments = [_parse_alignment(c) for c in sep_cells]
 
     data_rows_with_indices = []
     for i in range(sep_idx + 1, len(block_lines)):
         data_rows_with_indices.append((_parse_row(block_lines[i]), i - (sep_idx + 1)))
-
-    n_cols = len(header_cells)
 
     # Build column permutation
     if shuffle_columns:

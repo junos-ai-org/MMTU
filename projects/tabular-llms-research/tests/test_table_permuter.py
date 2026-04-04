@@ -163,3 +163,18 @@ class TestBothPermutations:
         assert "25" in result
         assert "30" in result
         assert "35" in result
+
+
+class TestMalformedTables:
+    def test_no_header_row_separator_first(self):
+        prompt = "|---|---|\n| a | b |\n| c | d |"
+        # Should not crash and should return the table unmodified
+        result = permute_tables_in_prompt(prompt, shuffle_columns=True, seed=42)
+        assert result == prompt
+
+    def test_mismatched_columns(self):
+        prompt = "| a | b | c |\n|---|---|\n| 1 | 2 | 3 |"
+        # The separator has 2 columns, header has 3
+        # Should not crash and should return the table unmodified
+        result = permute_tables_in_prompt(prompt, shuffle_columns=True, seed=42)
+        assert result == prompt
