@@ -11,6 +11,8 @@ _project_dir = Path(__file__).resolve().parent.parent
 if str(_project_dir) not in sys.path:
     sys.path.insert(0, str(_project_dir))
 
+tiktoken = pytest.importorskip("tiktoken")
+
 from token_counter import count_tokens, _is_tiktoken_model
 
 
