@@ -7,7 +7,8 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-import torch
+
+torch = pytest.importorskip("torch")
 
 # Import directly to avoid heavy deps via __init__.py
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
