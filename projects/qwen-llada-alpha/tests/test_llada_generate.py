@@ -4,9 +4,10 @@ import sys
 import types
 from pathlib import Path
 
-import numpy as np
 import pytest
-import torch
+
+np = pytest.importorskip("numpy")
+torch = pytest.importorskip("torch")
 
 # Import directly from file to avoid backends/__init__.py (which pulls in
 # transformers and other heavy deps not available in test environments).

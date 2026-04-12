@@ -45,8 +45,11 @@ class TestTiktokenPath:
         counts = count_tokens(["hello"], tokenizer="gpt-4o")
         assert counts == [1]
 
+    @patch.dict("sys.modules", {"tiktoken": MagicMock()})
     def test_is_tiktoken_model_known(self):
         # These should not need network; they just check tiktoken's model map
+        import tiktoken
+        tiktoken.encoding_for_model.side_effect = KeyError
         assert _is_tiktoken_model("google/t5gemma-9b-9b-ul2-it") is False
         assert _is_tiktoken_model("not-a-real-model") is False
 
